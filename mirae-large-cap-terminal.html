@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mirae Asset Large Cap Fund — Positioning Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070B; --card:#0C1118; --card2:#0E141C;
+    --border:rgba(255,255,255,0.07); --borderStrong:rgba(255,255,255,0.14);
+    --accent:#F2732B; --accentDim:rgba(242,115,43,0.14); --accentLine:rgba(242,115,43,0.35);
+    --blue:#4C8DFF; --blueDim:rgba(76,141,255,0.14);
+    --green:#34D399; --greenDim:rgba(52,211,153,0.14);
+    --red:#F2545B;
+    --white:#F3F5F8; --grey:#8A93A3; --greyDim:#565E6B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--white);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  ::-webkit-scrollbar{height:6px;width:6px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
+  button{font-family:inherit;background:none;border:none;color:inherit;cursor:pointer;}
+  a{color:inherit;}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;}
+
+  .wrap{max-width:1360px;margin:0 auto;padding:0 28px 80px;}
+
+  /* top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 0;
+    border-bottom:1px solid var(--border);margin-bottom:28px;font-size:11.5px;color:var(--grey);}
+  .topbar .left, .topbar .right{display:flex;gap:18px;align-items:center;}
+  .live-dot{width:6px;height:6px;border-radius:99px;background:var(--green);display:inline-block;margin-right:5px;}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1fr 1.3fr;gap:32px;align-items:start;margin-bottom:28px;}
+  .hero h1{font-size:30px;margin:0 0 6px;letter-spacing:-0.01em;font-weight:650;}
+  .hero .amc{color:var(--grey);font-size:13.5px;margin-bottom:16px;}
+  .chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .mandate{font-size:12.5px;color:var(--greyDim);line-height:1.6;max-width:420px;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+    border-radius:14px;overflow:hidden;border:1px solid var(--border);}
+  .kpi{background:var(--card);padding:18px 16px;}
+  .kpi .l{font-size:10px;color:var(--greyDim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+  .kpi .v{font-size:16.5px;color:var(--white);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* eyebrow */
+  .eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:14px;color:var(--grey);
+    font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;}
+  .eyebrow svg{flex-shrink:0;}
+
+  /* card */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;
+    transition:border-color .35s ease, transform .35s ease, box-shadow .35s ease;}
+  .card:hover{border-color:var(--borderStrong);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.35);}
+  .card.flat{padding:0;overflow:hidden;}
+  .card.flat:hover{transform:none;box-shadow:none;}
+
+  /* chip */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+    padding:4px 10px;border-radius:999px;font-family:'JetBrains Mono',monospace;letter-spacing:0.02em;
+    background:rgba(255,255,255,0.05);color:var(--grey);border:1px solid var(--border);}
+  .chip.accent{background:var(--accentDim);color:var(--accent);border-color:var(--accentLine);}
+  .chip.green{background:var(--greenDim);color:var(--green);border-color:rgba(52,211,153,.3);}
+  .chip.blue{background:var(--blueDim);color:var(--blue);border-color:rgba(76,141,255,.3);}
+
+  .delta{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;font-weight:600;}
+
+  /* grids */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .grid-compass{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin-bottom:20px;}
+  .grid-radar{display:grid;grid-template-columns:1fr 1.3fr;gap:20px;margin-bottom:20px;}
+  .section{margin-bottom:32px;}
+  .section-tight{margin-bottom:20px;}
+
+  @media (max-width: 860px){
+    .hero,.grid-2,.grid-compass,.grid-radar{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* signature */
+  .sig-head{padding:22px 26px 0;}
+  .sig-head-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
+  .sig-desc{color:var(--grey);font-size:13px;max-width:520px;line-height:1.5;}
+  .sig-strip{display:flex;border-top:1px solid var(--border);}
+  .sig-cell{flex:1;padding:12px 8px;text-align:center;border-left:1px solid var(--border);}
+  .sig-cell:first-child{border-left:none;}
+  .sig-cell .v{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white);font-weight:600;}
+  .sig-cell .l{font-size:9.5px;color:var(--greyDim);margin-top:2px;letter-spacing:0.03em;}
+
+  /* compass */
+  .compass-body{display:flex;gap:24px;flex-wrap:wrap;}
+  .compass-side{flex:1;min-width:220px;}
+  .qbtn-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .qbtn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:6px 10px;border-radius:8px;
+    cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--grey);transition:all .2s ease;}
+  .qbtn.active{border-color:var(--accentLine);background:var(--accentDim);color:var(--accent);}
+  .label-sm{font-size:12px;color:var(--greyDim);margin-bottom:6px;letter-spacing:0.05em;text-transform:uppercase;}
+  .ai-note{color:var(--white);font-size:14.5px;line-height:1.6;margin:0;}
+  .axis-row{margin-top:16px;display:flex;gap:20px;}
+  .axis-label{font-size:10.5px;color:var(--greyDim);text-transform:uppercase;letter-spacing:0.05em;}
+  .axis-val{font-family:'JetBrains Mono',monospace;color:var(--white);font-size:15px;}
+
+  /* dna */
+  .dna-row{margin-bottom:14px;}
+  .dna-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .dna-name{font-size:12.5px;color:var(--white);font-weight:500;}
+  .dna-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--grey);}
+  .dna-segs{display:flex;gap:2px;}
+  .dna-seg{height:7px;flex:1;border-radius:1.5px;background:rgba(255,255,255,0.06);transition:background .5s ease;}
+  .dna-note{font-size:11.5px;color:var(--greyDim);margin-top:5px;line-height:1.4;display:none;}
+  .dna-row:hover .dna-note{display:block;}
+  .dna-row:hover .dna-segs{opacity:1;}
+
+  /* fingerprint */
+  .fp-body{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+  .fp-side{flex:1;min-width:220px;}
+  .fp-default{color:var(--grey);font-size:13.5px;line-height:1.6;margin:0;}
+  .fp-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .fp-legend span{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--grey);cursor:pointer;}
+  .fp-legend i{width:7px;height:7px;border-radius:99px;display:inline-block;}
+
+  /* mirror */
+  .mirror-legend{display:flex;gap:16px;font-size:11px;color:var(--grey);margin-bottom:16px;}
+  .mirror-legend span{display:flex;align-items:center;gap:5px;}
+  .mirror-legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
+  .mirror-row{margin-bottom:12px;}
+  .mirror-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
+  .mirror-vals{font-family:'JetBrains Mono',monospace;color:var(--greyDim);font-size:11.5px;}
+  .mirror-track{position:relative;height:14px;}
+  .mirror-bench{position:absolute;top:3px;left:0;height:3px;border-radius:2px;background:var(--grey);opacity:.5;width:0;transition:width 1s ease;}
+  .mirror-fund{position:absolute;top:8px;left:0;height:4px;border-radius:2px;background:var(--accent);width:0;transition:width 1s ease .1s;}
+
+  /* treemap */
+  .treemap{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:18px;}
+  .tblock{height:74px;border-radius:8px;cursor:pointer;padding:10px 12px;background:var(--card2);
+    border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;
+    transition:all .25s ease;min-width:90px;}
+  .tblock.open{background:var(--accentDim);border-color:var(--accentLine);}
+  .tblock .name{font-size:11.5px;color:var(--white);font-weight:600;line-height:1.25;}
+  .tblock.open .name{color:var(--accent);}
+  .tblock .bottom{display:flex;justify-content:space-between;align-items:flex-end;}
+  .tblock .wt{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--white);font-weight:600;}
+  .sector-detail{border-top:1px solid var(--border);padding-top:14px;}
+  .sector-detail .lbl{font-size:11px;color:var(--greyDim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+  .sector-chips{display:flex;flex-wrap:wrap;gap:8px;}
+
+  /* holdings table */
+  th{text-align:right;padding:10px 20px;border-bottom:1px solid var(--border);font-weight:600;
+    color:var(--greyDim);text-transform:uppercase;font-size:10.5px;letter-spacing:.05em;}
+  th:first-child{text-align:left;}
+  td{padding:10px 20px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  td.name{color:var(--white);font-weight:500;}
+  td.right{text-align:right;}
+  td.grey{color:var(--grey);}
+
+  /* radar */
+  .radar-legend{display:flex;gap:16px;font-size:11px;color:var(--grey);justify-content:center;margin-top:10px;}
+  .radar-legend span{display:flex;align-items:center;gap:5px;}
+  .radar-legend i{width:8px;height:8px;border-radius:99px;display:inline-block;}
+
+  /* evolution */
+  .evo-scroll{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;}
+  .evo-card{min-width:250px;flex:0 0 auto;padding:16px;border-radius:10px;background:var(--card2);
+    border:1px solid var(--border);position:relative;}
+  .evo-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .evo-dot{width:8px;height:8px;border-radius:99px;background:var(--grey);}
+  .evo-dot.current{background:var(--accent);}
+  .evo-q{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--grey);}
+  .evo-headline{color:var(--white);font-weight:600;font-size:13.5px;margin-bottom:8px;}
+  .evo-change{color:var(--grey);font-size:12px;line-height:1.5;margin-bottom:10px;}
+  .evo-ai{border-top:1px solid var(--border);padding-top:8px;display:flex;gap:6px;color:var(--greyDim);
+    font-size:11.5px;line-height:1.45;}
+  .evo-ai svg{flex-shrink:0;margin-top:2px;}
+
+  /* insights */
+  .insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+  .insight-card{display:flex;flex-direction:column;gap:10px;}
+  .insight-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .insight-title{color:var(--white);font-weight:600;font-size:14px;max-width:75%;}
+  .insight-body{color:var(--grey);font-size:12.5px;line-height:1.55;margin:0;}
+  .insight-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--greyDim);margin-top:4px;}
+  .insight-meta b{color:var(--white);}
+  .insight-evidence{font-size:10.5px;color:var(--greyDim);border-top:1px solid var(--border);padding-top:8px;
+    display:flex;gap:5px;align-items:flex-start;}
+  .insight-evidence svg{flex-shrink:0;margin-top:2px;}
+
+  /* performance */
+  .perf-grid1{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;}
+  .perf-grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;}
+  @media (max-width:860px){.perf-grid1,.perf-grid2{grid-template-columns:1fr;}}
+  .perf-label{font-size:12px;color:var(--grey);margin-bottom:10px;}
+  .returns-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .returns-k{font-size:12.5px;color:var(--grey);}
+  .returns-v{font-family:'JetBrains Mono',monospace;font-size:17px;color:var(--white);font-weight:600;}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .stat-k{font-size:10.5px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.04em;}
+  .stat-v{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--white);font-weight:600;}
+
+  /* summary */
+  .summary-brief{margin-bottom:14px;}
+  .summary-brief .lbl{font-size:11px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+  .summary-brief p{color:var(--white);font-size:15px;line-height:1.7;margin:0;}
+  .summary-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media (max-width:860px){.summary-cols{grid-template-columns:1fr;}}
+  .summary-cols .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;font-weight:700;}
+  .summary-cols ul{margin:0;padding-left:18px;color:var(--grey);font-size:13px;line-height:1.7;}
+  .summary-blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
+  .summary-blocks .lbl{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;
+    margin-bottom:8px;font-weight:700;}
+  .summary-blocks p{color:var(--grey);font-size:12.8px;line-height:1.6;margin:0;}
+
+  .footer-note{border-top:1px solid var(--border);padding-top:20px;font-size:11px;color:var(--greyDim);line-height:1.6;}
+
+  /* ===== institutional modules ===== */
+  .badge-conv{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;background:var(--accentDim);color:var(--accent);border:1px solid var(--accentLine);}
+  .exh-row{display:grid;grid-template-columns:1.6fr .7fr .9fr 1.9fr .8fr;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--border);}
+  .exh-row:last-child{border-bottom:none;}
+  .exh-head{font-size:10px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.06em;padding:0 4px 10px;border-bottom:1px solid var(--border);}
+  .exh-head-row{display:grid;grid-template-columns:1.6fr .7fr .9fr 1.9fr .8fr;gap:14px;}
+  @media(max-width:860px){.exh-row,.exh-head-row{grid-template-columns:1fr;}}
+  .exh-name{color:var(--white);font-weight:600;font-size:13.5px;}
+  .exh-why{color:var(--grey);font-size:12px;line-height:1.5;}
+  .exh-sub{color:var(--greyDim);font-size:11px;margin-top:2px;}
+
+  .peer-scroll{overflow-x:auto;}
+  .peer-table{min-width:1180px;}
+  .peer-table th{white-space:nowrap;font-size:10px;}
+  .peer-table td{white-space:nowrap;font-size:12px;}
+  .peer-table tr.self td{background:var(--accentDim);}
+  .peer-table tr.self td.name{color:var(--accent);font-weight:700;}
+  .peer-table td.best{color:var(--green);font-weight:700;}
+  .peer-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+
+  .rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
+  .rank-tile{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .rank-tile .big{font-family:'JetBrains Mono',monospace;font-size:21px;color:var(--accent);font-weight:700;}
+  .rank-tile .lbl2{font-size:10.5px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+  .rank-bars{display:flex;flex-direction:column;gap:12px;}
+  .rank-bar-row{display:grid;grid-template-columns:120px 1fr 60px;align-items:center;gap:10px;}
+  .rank-bar-k{font-size:12px;color:var(--grey);}
+  .rank-bar-track{position:relative;height:8px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;}
+  .rank-bar-fill{position:absolute;left:0;top:0;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--blue));width:0;transition:width 1s ease;}
+  .rank-bar-v{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--white);text-align:right;}
+
+  .calc-amt-row,.calc-dur-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media(max-width:860px){.calc-grid{grid-template-columns:1fr;}}
+  .calc-results{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+  .calc-result{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .calc-result .k{font-size:10.5px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .calc-result .v{font-family:'JetBrains Mono',monospace;font-size:17px;color:var(--white);font-weight:700;}
+  .calc-result.hi .v{color:var(--accent);}
+  .calc-note{font-size:11.5px;color:var(--greyDim);margin-top:12px;line-height:1.6;}
+
+  .svl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+  @media(max-width:860px){.svl-grid{grid-template-columns:1fr;}}
+  .svl-col{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .svl-col .lbl2{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;}
+  .svl-row{display:flex;justify-content:space-between;font-size:12px;color:var(--grey);margin-bottom:8px;}
+  .svl-row b{color:var(--white);font-family:'JetBrains Mono',monospace;font-weight:600;}
+
+  .rr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+  .rr-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .rr-card .per{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;font-size:13px;margin-bottom:10px;}
+  .rr-stat{display:flex;justify-content:space-between;font-size:11.5px;color:var(--grey);padding:3px 0;}
+  .rr-stat b{color:var(--white);font-family:'JetBrains Mono',monospace;}
+
+  .overlap-row{display:grid;grid-template-columns:1.3fr 2fr .7fr;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .overlap-row:last-child{border-bottom:none;}
+  .overlap-name{font-size:12.5px;color:var(--white);}
+  .overlap-track{position:relative;height:8px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;}
+  .overlap-fill{position:absolute;left:0;top:0;height:100%;border-radius:6px;background:var(--blue);width:0;transition:width 1s ease;}
+  .overlap-pct{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--white);text-align:right;}
+
+  .evo-lists{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:11px;}
+  .evo-lists div{color:var(--greyDim);}
+  .evo-lists b{color:var(--grey);display:block;margin-bottom:3px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;}
+  .tag-add{color:var(--green);}.tag-rem{color:var(--red);}
+
+  /* ===== OS shell ===== */
+  .os-banner{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;margin-bottom:20px;
+    background:linear-gradient(90deg,var(--accentDim),transparent);border:1px solid var(--accentLine);}
+  .os-banner .dot{width:7px;height:7px;border-radius:99px;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:pulseDot 2s infinite;}
+  @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(242,115,43,.5);}70%{box-shadow:0 0 0 8px rgba(242,115,43,0);}100%{box-shadow:0 0 0 0 rgba(242,115,43,0);}}
+  .os-banner span{font-size:12px;color:var(--grey);}
+  .os-banner b{color:var(--white);}
+
+  /* ===== Fund Brain ===== */
+  .brain-wrap{display:flex;gap:20px;flex-wrap:wrap;}
+  .brain-svg{flex:1.5;min-width:340px;}
+  .brain-side{flex:1;min-width:260px;}
+  .brain-node{cursor:pointer;transition:opacity .3s ease;}
+  .brain-node circle{transition:r .25s ease, stroke-width .25s ease;}
+  .brain-node text{font-size:9.5px;fill:var(--grey);pointer-events:none;}
+  .brain-edge{stroke-dasharray:4 3;transition:opacity .3s ease, stroke-width .3s ease;}
+  .brain-tier-lbl{font-size:9px;fill:var(--greyDim);letter-spacing:.12em;text-transform:uppercase;}
+  .brain-default{color:var(--grey);font-size:13.5px;line-height:1.6;margin:0;}
+  .brain-signal{font-size:11px;padding:3px 9px;border-radius:99px;display:inline-block;margin-top:10px;font-family:'JetBrains Mono',monospace;}
+
+  /* ===== Conviction Galaxy ===== */
+  .galaxy-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+  .galaxy-svg{flex-shrink:0;}
+  .galaxy-ring{fill:none;stroke:var(--border);stroke-dasharray:2 4;}
+  .galaxy-orbit{transform-origin:center;}
+  .orbit-slow{animation:orbitspin 90s linear infinite;}
+  .orbit-mid{animation:orbitspin 60s linear infinite reverse;}
+  .orbit-fast{animation:orbitspin 40s linear infinite;}
+  @keyframes orbitspin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .galaxy-star{cursor:pointer;}
+  .galaxy-star circle{transition:r .2s ease;}
+  .galaxy-star:hover circle{filter:brightness(1.3);}
+  .galaxy-counter-rot{transform-origin:center;}
+  .galaxy-side{flex:1;min-width:240px;}
+
+  /* ===== Capital Flow River ===== */
+  .river-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grey);margin-top:12px;}
+  .river-legend span{display:flex;align-items:center;gap:5px;}
+  .river-legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
+  .river-flow{stroke-dasharray:6 5;animation:riverdash 2.4s linear infinite;}
+  @keyframes riverdash{to{stroke-dashoffset:-44;}}
+
+  /* ===== What-If Lab ===== */
+  .lab-scenario-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .lab-slider-row{margin-bottom:16px;}
+  .lab-slider-row label{font-size:11px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px;}
+  .lab-slider-row input[type=range]{width:100%;accent-color:var(--accent);}
+  .lab-slider-val{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;font-size:13px;}
+
+  /* ===== Risk Explosion Map ===== */
+  .shock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+  .shock-bubble{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;position:relative;overflow:hidden;}
+  .shock-bubble:hover{transform:scale(1.035);border-color:var(--red);box-shadow:0 0 0 1px rgba(242,84,91,.25),0 14px 30px rgba(242,84,91,.12);}
+  .shock-bubble .impact{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--red);}
+  .shock-bubble .nm{font-size:12.5px;color:var(--white);font-weight:600;margin-top:8px;}
+  .shock-bubble .math{font-size:10.5px;color:var(--greyDim);margin-top:8px;line-height:1.5;font-family:'JetBrains Mono',monospace;}
+
+  /* ===== Fund Pulse ===== */
+  .pulse-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+  .pulse-score{flex-shrink:0;text-align:center;min-width:150px;}
+  .pulse-score .num{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;}
+  .pulse-score .lbl3{font-size:11px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+  .vitals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;flex:1;min-width:260px;}
+  .vital{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .vital .k{font-size:10px;color:var(--greyDim);text-transform:uppercase;letter-spacing:.04em;}
+  .vital .v{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--white);margin-top:4px;}
+  .vital-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden;}
+  .vital-bar i{display:block;height:100%;border-radius:3px;}
+
+  /* ===== Decision Replay ===== */
+  .replay-controls{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .replay-play{width:34px;height:34px;border-radius:99px;background:var(--accentDim);border:1px solid var(--accentLine);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .replay-track{position:relative;flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:3px;}
+  .replay-fill{position:absolute;left:0;top:0;height:100%;background:var(--accent);border-radius:3px;transition:width .4s ease;}
+  .replay-dots{position:absolute;top:50%;left:0;width:100%;display:flex;justify-content:space-between;transform:translateY(-50%);}
+  .replay-dots span{width:11px;height:11px;border-radius:99px;background:var(--card);border:2px solid var(--border);cursor:pointer;transition:all .25s ease;}
+  .replay-dots span.active{background:var(--accent);border-color:var(--accent);}
+  .replay-diff{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:20px;min-height:170px;}
+  .diff-line{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:3px 0;}
+  .diff-add{color:var(--green);}.diff-rem{color:var(--red);}.diff-mod{color:var(--blue);}
+
+  /* ===== Research Copilot ===== */
+  .copilot-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .copilot-chip{font-size:11.5px;padding:7px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card2);
+    color:var(--grey);cursor:pointer;transition:all .2s ease;}
+  .copilot-chip:hover{border-color:var(--accentLine);color:var(--accent);}
+  .copilot-log{min-height:70px;max-height:420px;overflow-y:auto;margin-bottom:14px;}
+  .copilot-msg{padding:12px 16px;border-radius:12px;margin-bottom:10px;font-size:13px;line-height:1.6;max-width:88%;}
+  .copilot-msg.user{background:var(--accentDim);color:var(--white);margin-left:auto;border:1px solid var(--accentLine);}
+  .copilot-msg.ai{background:var(--card2);color:var(--grey);border:1px solid var(--border);}
+  .copilot-msg.ai b{color:var(--white);}
+  .copilot-input-row{display:flex;gap:8px;}
+  .copilot-input-row input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;
+    color:var(--white);font-family:inherit;font-size:13px;}
+  .copilot-input-row input:focus{outline:none;border-color:var(--accentLine);}
+  .copilot-send{background:var(--accent);color:#1a0d05;font-weight:700;border-radius:10px;padding:0 18px;font-size:13px;}
+  .copilot-send:disabled{opacity:.5;}
+  .typing-dot{display:inline-block;width:5px;height:5px;border-radius:99px;background:var(--grey);margin-right:3px;animation:typingBounce 1.1s infinite;}
+  .typing-dot:nth-child(2){animation-delay:.15s;}.typing-dot:nth-child(3){animation-delay:.3s;}
+  @keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============================================================
+   DESIGN TOKENS
+============================================================ */
+const T = {
+  accent:"#F2732B", blue:"#4C8DFF", green:"#34D399", red:"#F2545B",
+  white:"#F3F5F8", grey:"#8A93A3", greyDim:"#565E6B", border:"rgba(255,255,255,0.07)"
+};
+
+/* ============================================================
+   ICONS (tiny inline SVGs, stroke=currentColor)
+============================================================ */
+function icon(name, size, color){
+  const s = size||13, c = color||"currentColor";
+  const paths = {
+    activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    fingerprint:'<path d="M2 12C2 6.5 6.5 2 12 2s10 4.5 10 10"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M8 12a4 4 0 0 1 8 0"/><line x1="12" y1="12" x2="12" y2="21"/>',
+    compare:'<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>',
+    grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+    bar:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+    clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    sparkles:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/>',
+    file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    up:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+    down:'<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>',
+    minus:'<line x1="5" y1="12" x2="19" y2="12"/>',
+    chevron:'<polyline points="9 18 15 12 9 6"/>'
+  };
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths[name]||""}</svg>`;
+}
+
+/* ============================================================
+   FUND DATA
+============================================================ */
+const FUND = {
+  name:"Mirae Asset Large Cap Fund", amc:"Mirae Asset Investment Managers (India)",
+  category:"Equity · Large Cap", benchmark:"NIFTY 100 TRI", exchange:"NSE",
+  manager:"Gaurav Misra", managerTenure:"6 yrs on this fund · 23 yrs experience",
+  aum:40184.41, expenseRatio:0.55, nav:115.41,
+  exitLoad:"1.00% if redeemed within 365 days", turnover:34,
+  inception:"04 Apr 2008", updated:"01 Jul 2026", risk:"Very High",
+  mandate:"Min. 80% in large-cap equities at all times"
+};
+
+const SECTORS = [
+  {name:"Banking",weight:24.8,bench:22.1},
+  {name:"Financial Services",weight:9.6,bench:8.0},
+  {name:"Information Technology",weight:12.4,bench:11.8},
+  {name:"Oil & Gas",weight:8.1,bench:9.4},
+  {name:"Consumer",weight:8.2,bench:7.1},
+  {name:"Capital Goods",weight:6.9,bench:6.0},
+  {name:"Auto",weight:5.4,bench:5.9},
+  {name:"Healthcare",weight:5.4,bench:4.3},
+  {name:"Telecom",weight:4.6,bench:3.8},
+  {name:"FMCG",weight:4.0,bench:6.2},
+  {name:"Power",weight:3.1,bench:3.0},
+  {name:"Construction",weight:3.2,bench:2.6},
+  {name:"Metals",weight:2.4,bench:3.1},
+  {name:"Chemicals",weight:1.1,bench:1.2},
+  {name:"Real Estate",weight:0.8,bench:1.0}
+].sort((a,b)=>b.weight-a.weight);
+
+const HOLDINGS_BY_SECTOR = {
+  "Banking":["HDFC Bank","ICICI Bank","Axis Bank","Kotak Mahindra Bank","State Bank of India"],
+  "Financial Services":["Bajaj Finance","SBI Life Insurance","HDFC Life Insurance"],
+  "Information Technology":["Infosys","TCS","HCLTech"],
+  "Oil & Gas":["Reliance Industries"],
+  "Consumer":["Titan Company","Asian Paints"],
+  "Capital Goods":["Larsen & Toubro"],
+  "Auto":["Maruti Suzuki","Mahindra & Mahindra"],
+  "Healthcare":["Sun Pharmaceutical"],
+  "Telecom":["Bharti Airtel"],
+  "FMCG":["ITC","Hindustan Unilever"],
+  "Power":["NTPC","Power Grid Corporation"],
+  "Construction":["UltraTech Cement"],
+  "Metals":["Tata Steel"],
+  "Chemicals":["Pidilite Industries"],
+  "Real Estate":["DLF"]
+};
+
+const TOP_HOLDINGS = [
+  {name:"HDFC Bank Ltd",sector:"Banking",weight:9.23,chg:0.31,mcap:"Large",pe:19.8},
+  {name:"ICICI Bank Ltd",sector:"Banking",weight:8.55,chg:0.18,mcap:"Large",pe:20.4},
+  {name:"Reliance Industries Ltd",sector:"Oil & Gas",weight:5.76,chg:-0.42,mcap:"Large",pe:24.1},
+  {name:"Bharti Airtel Ltd",sector:"Telecom",weight:4.60,chg:0.55,mcap:"Large",pe:38.6},
+  {name:"Infosys Ltd",sector:"Information Technology",weight:4.28,chg:-0.09,mcap:"Large",pe:25.3},
+  {name:"TCS Ltd",sector:"Information Technology",weight:3.87,chg:-0.14,mcap:"Large",pe:27.6},
+  {name:"Larsen & Toubro Ltd",sector:"Capital Goods",weight:3.61,chg:0.22,mcap:"Large",pe:33.9},
+  {name:"Axis Bank Ltd",sector:"Banking",weight:3.34,chg:0.06,mcap:"Large",pe:13.2},
+  {name:"Kotak Mahindra Bank Ltd",sector:"Banking",weight:3.08,chg:-0.11,mcap:"Large",pe:18.5},
+  {name:"State Bank of India",sector:"Banking",weight:2.94,chg:0.40,mcap:"Large",pe:10.7},
+  {name:"Sun Pharmaceutical Ind.",sector:"Healthcare",weight:2.61,chg:0.15,mcap:"Large",pe:31.2},
+  {name:"UltraTech Cement Ltd",sector:"Construction",weight:2.28,chg:0.08,mcap:"Large",pe:41.5},
+  {name:"Maruti Suzuki India Ltd",sector:"Auto",weight:2.11,chg:-0.19,mcap:"Large",pe:29.4},
+  {name:"Titan Company Ltd",sector:"Consumer",weight:1.93,chg:0.27,mcap:"Large",pe:74.8},
+  {name:"Asian Paints Ltd",sector:"Consumer",weight:1.72,chg:-0.06,mcap:"Large",pe:46.1},
+  {name:"NTPC Ltd",sector:"Power",weight:1.58,chg:0.03,mcap:"Large",pe:14.6},
+  {name:"Power Grid Corp.",sector:"Power",weight:1.46,chg:0.11,mcap:"Large",pe:16.9},
+  {name:"Mahindra & Mahindra Ltd",sector:"Auto",weight:1.39,chg:0.34,mcap:"Large",pe:27.7},
+  {name:"HCLTech Ltd",sector:"Information Technology",weight:1.27,chg:-0.05,mcap:"Large",pe:23.9},
+  {name:"Bajaj Finance Ltd",sector:"Financial Services",weight:1.19,chg:0.16,mcap:"Large",pe:28.3}
+];
+
+const DNA = [
+  {key:"Quality",value:82,note:"High ROE, low leverage franchises dominate the book."},
+  {key:"Risk",value:58,note:"Moderate active risk; beta held close to 0.95–1.02."},
+  {key:"Growth",value:71,note:"Tilted to earnings compounders over cyclicals."},
+  {key:"Value",value:54,note:"Valuation-aware but not a deep-value mandate."},
+  {key:"Momentum",value:63,note:"Recent adds have positive 6M price momentum."},
+  {key:"Liquidity",value:91,note:"Near-entirely large-cap, NSE top-100 names."},
+  {key:"Diversification",value:68,note:"Top-10 names hold ~46% of the portfolio."},
+  {key:"Cash",value:24,note:"2.7% cash — low, fully invested stance."},
+  {key:"Stability",value:76,note:"Low churn; 34% annual portfolio turnover."}
+];
+
+const FINGERPRINT_RINGS = [
+  {key:"Sector Allocation",value:88,color:T.accent,note:"Concentrated in Banking + IT — the fund's structural core."},
+  {key:"Risk",value:58,color:T.blue,note:"Active risk kept moderate versus NIFTY 100 TRI."},
+  {key:"Quality",value:82,color:T.green,note:"Balance-sheet quality screens dominate stock selection."},
+  {key:"Conviction",value:74,color:T.accent,note:"Top-10 weight of ~46% signals high-conviction sizing."},
+  {key:"Cash",value:24,color:T.grey,note:"Minimal cash drag — manager stays close to fully invested."},
+  {key:"Market Cap",value:95,color:T.blue,note:"80%+ mandate keeps the book almost entirely large-cap."},
+  {key:"Diversification",value:68,color:T.green,note:"15 sectors held, but Banking + IT anchor over a third."},
+  {key:"Factor Exposure",value:66,color:T.accent,note:"Quality and low-volatility factors outweigh pure value."}
+];
+
+const FACTOR_RADAR = [
+  {axis:"Quality",Fund:82,Benchmark:68,Category:71},
+  {axis:"Growth",Fund:71,Benchmark:64,Category:69},
+  {axis:"Value",Fund:54,Benchmark:58,Category:52},
+  {axis:"Momentum",Fund:63,Benchmark:60,Category:65},
+  {axis:"Yield",Fund:41,Benchmark:47,Category:44},
+  {axis:"Low Vol.",Fund:59,Benchmark:52,Category:55},
+  {axis:"Size",Fund:95,Benchmark:91,Category:84},
+  {axis:"Liquidity",Fund:91,Benchmark:96,Category:87}
+];
+
+const BENCHMARK_MIRROR = [
+  {label:"Banking + Financials",fund:34.4,bench:30.1},
+  {label:"Technology",fund:12.4,bench:11.8},
+  {label:"Quality score",fund:82,bench:68},
+  {label:"Active risk (relative)",fund:58,bench:50},
+  {label:"Weighted market cap",fund:95,bench:91},
+  {label:"Cash allocation",fund:2.7,bench:0.0},
+  {label:"Diversification (sectors)",fund:68,bench:74},
+  {label:"Growth tilt",fund:71,bench:64},
+  {label:"Value tilt",fund:54,bench:58}
+];
+
+const COMPASS_POINTS = [
+  {q:"Q2 FY26",x:22,y:8,note:"Balanced stance; modest growth lean entering festive-demand season."},
+  {q:"Q3 FY26",x:30,y:14,note:"Added IT and Capital Goods, trimmed FMCG on rich valuations."},
+  {q:"Q4 FY26",x:27,y:22,note:"Raised Banking weight ahead of expected rate-cycle easing."},
+  {q:"Q1 FY27",x:35,y:19,note:"Current: growth-leaning, moderately aggressive; cash cut to 2.7%."}
+];
+
+const EVOLUTION = [
+  {q:"Q2 FY26",headline:"Defensive-to-neutral rebalance",change:"Trimmed Auto by 90bps, added Healthcare on earnings visibility.",ai:"Manager reduced cyclicality ahead of a choppy global rate backdrop.",
+    added:["Sun Pharmaceutical"],removed:["Britannia Industries"],increased:["Sun Pharma","NTPC"],reduced:["Maruti Suzuki","M&M"],sectorRotation:"Auto → Healthcare",mcapShift:"No change (95%+ large-cap)",cashChange:"4.4% → 4.1%"},
+  {q:"Q3 FY26",headline:"Technology re-rating captured",change:"IT weight raised from 10.9% to 12.1%; FMCG trimmed on valuation.",ai:"Rotation followed an IT earnings upgrade cycle and export-demand recovery.",
+    added:["HCLTech"],removed:["Nestle India"],increased:["Infosys","TCS"],reduced:["ITC","HUL"],sectorRotation:"FMCG → Technology",mcapShift:"No change",cashChange:"4.1% → 3.6%"},
+  {q:"Q4 FY26",headline:"Banking overweight reinforced",change:"PSU + private banking weight raised to 24.1% ahead of rate-cut expectations.",ai:"Positioning anticipates net-interest-margin stabilisation as rates ease.",
+    added:["State Bank of India"],removed:["IndusInd Bank"],increased:["HDFC Bank","SBI"],reduced:["Bajaj Finance"],sectorRotation:"Diversified → Banking",mcapShift:"No change",cashChange:"3.6% → 3.1%"},
+  {q:"Q1 FY27",headline:"Cash deployed, conviction rises",change:"Cash cut from 4.1% to 2.7%; top-10 weight rose to 46.2%.",ai:"Manager increased concentration in highest-conviction compounders.",
+    added:[],removed:["DLF"],increased:["HDFC Bank","Bharti Airtel"],reduced:["Asian Paints"],sectorRotation:"Cash → Banking + Telecom",mcapShift:"No change",cashChange:"3.1% → 2.7%"}
+];
+
+const AI_INSIGHTS = [
+  {title:"Technology overweight building",body:"IT allocation has risen for three straight quarters, now 60bps above the NIFTY 100 TRI weight.",confidence:87,evidence:"3-quarter sector-flow trend",impact:"Medium",priority:"High"},
+  {title:"Banking exposure increasing",body:"Combined Banking + Financials weight is 4.3pp above benchmark, the fund's largest active bet.",confidence:91,evidence:"Latest portfolio disclosure vs. 2-quarter history",impact:"High",priority:"High"},
+  {title:"Cash allocation reduced",body:"Cash buffer fell from 4.1% to 2.7% quarter-on-quarter as conviction ideas were funded.",confidence:82,evidence:"Cash-equivalent line item, last 2 disclosures",impact:"Medium",priority:"Medium"},
+  {title:"Quality factor improving",body:"Aggregate portfolio ROE and balance-sheet quality scores have trended up for four quarters.",confidence:78,evidence:"Factor-model decomposition",impact:"Medium",priority:"Medium"},
+  {title:"Concentration risk rising",body:"Top-10 holding weight has climbed to 46.2%, above the fund's 3-year average of 42.8%.",confidence:84,evidence:"Holdings concentration ratio, trailing 3Y",impact:"Medium",priority:"High"},
+  {title:"Momentum factor softening",body:"6-month price momentum across held names has moderated from elevated Q3 FY26 levels.",confidence:69,evidence:"Rolling factor exposure model",impact:"Low",priority:"Low"}
+];
+
+const GROWTH_SERIES = [
+  {m:"Jul '25",fund:100.0,bench:100.0},{m:"Sep '25",fund:103.4,bench:102.1},
+  {m:"Nov '25",fund:101.8,bench:100.7},{m:"Jan '26",fund:107.2,bench:104.9},
+  {m:"Mar '26",fund:109.9,bench:107.3},{m:"May '26",fund:112.6,bench:109.8},
+  {m:"Jul '26",fund:115.7,bench:111.4}
+];
+
+const DRAWDOWN_SERIES = [
+  {m:"Jul '25",dd:0},{m:"Aug '25",dd:-2.1},{m:"Sep '25",dd:-1.2},{m:"Oct '25",dd:-4.6},
+  {m:"Nov '25",dd:-6.8},{m:"Dec '25",dd:-3.9},{m:"Jan '26",dd:-1.4},{m:"Feb '26",dd:-5.2},
+  {m:"Mar '26",dd:-2.7},{m:"Apr '26",dd:-0.6},{m:"May '26",dd:-1.9},{m:"Jun '26",dd:-0.3},{m:"Jul '26",dd:0}
+];
+
+const RETURNS = {"1Y":3.77,"3Y":13.73,"5Y":12.63,"Since Inception":15.35};
+
+const STATS = [
+  {k:"Sharpe Ratio",v:"0.71"},{k:"Sortino Ratio",v:"0.98"},
+  {k:"Beta",v:"0.97"},{k:"Alpha",v:"1.4%"},
+  {k:"Std. Deviation",v:"12.8%"},{k:"Information Ratio",v:"0.42"},
+  {k:"Tracking Error",v:"3.1%"},{k:"Portfolio Turnover",v:"34%"}
+];
+
+const SUMMARY = {
+  brief:"A large-cap core holding with a quality-and-growth bias, running a structural overweight to Banking and Technology while keeping cash minimal. Positioning has grown moderately more concentrated and more growth-leaning over the past four quarters.",
+  strengths:["High-quality balance-sheet tilt across top holdings","Disciplined large-cap mandate — 95%+ in NSE top-100 names","Low turnover (34%) signals conviction over trading"],
+  weaknesses:["Concentration risk rising — top 10 now 46.2% of AUM","Value factor exposure trails benchmark","Limited cash buffer reduces flexibility in a sharp drawdown"],
+  strategy:"Bottom-up, quality-first stock selection within an 80%+ large-cap mandate; sector tilts follow earnings-cycle conviction rather than macro calls.",
+  sectorOutlook:"Constructive on Banking into a rate-easing cycle; selectively adding Technology on export-demand recovery; reducing FMCG on stretched valuations.",
+  riskOutlook:"Active risk is moderate (beta ~0.97) but rising concentration warrants monitoring if breadth narrows further.",
+  regime:"Best suited to a moderately rising, breadth-driven market; likely to lag in sharp value/cyclical rotations given the quality tilt.",
+  behaviour:"Expect the fund to track the benchmark closely in choppy markets and outperform in quality-led up-cycles, with drawdowns broadly in line with NIFTY 100 TRI.",
+  thesis:"A core large-cap allocation for investors who want benchmark-aware exposure with a quality and earnings-growth lean, accepting moderate concentration risk for higher-conviction sizing.",
+  whyOverPeers:"Among the 10-fund large-cap peer set, the fund pairs a below-median expense ratio (0.55%) with top-quartile risk-adjusted returns (Sharpe 0.71, Sortino 0.98) and the lowest portfolio turnover, evidencing genuine conviction investing rather than benchmark-hugging or high-cost trading.",
+  differentiators:"A structural telecom overweight via Bharti Airtel, a healthcare allocation nearly double the category average, and a near-fully-invested stance (2.7% cash) separate this fund from peers that lean more defensively on FMCG or carry larger cash buffers.",
+  riskFactors:"Rising concentration (top-10 at 46.2%, above its own 3-year average), a below-benchmark value tilt, and minimal cash buffer are the key watch-items; a sharp reversal in Banking or IT could disproportionately affect NAV given the sector weights.",
+  sipSuitability:"Well suited to SIP investors with a 5-10 year horizon — the low-turnover, quality-led approach tends to compound steadily and has historically shown strong SIP XIRR outcomes versus lumpsum in volatile entry windows.",
+  lumpsumSuitability:"Lumpsum entry is best timed after a market correction given the fund's near-full equity exposure (low cash cushion); investors uncomfortable with entry-point risk may prefer staggering deployment over 3-6 months.",
+  horizon:"5-7+ years — sufficient to ride out a full large-cap market cycle and let the quality/growth tilt compound past short-term drawdowns.",
+  investorProfile:"Best suited for a core-portfolio investor seeking large-cap stability with a moderate-to-aggressive risk appetite, comfortable with benchmark-relative sector bets and rising concentration, rather than a purely passive index-hugging mandate.",
+  vsCategory:"Outperforms the category average on turnover discipline, cost, and Sharpe ratio; trails a subset of higher-beta peers (e.g. Canara Robeco Bluechip) on trailing 3-5Y absolute CAGR during strong up-cycles.",
+  vsBenchmark:"Alpha of +1.4% and beta of 0.97 versus NIFTY 100 TRI indicate modest but consistent outperformance with slightly lower volatility than the index, aided by the quality and large-cap-liquidity tilt."
+};
+
+/* ============================================================
+   EXCLUSIVE HOLDINGS (positions rare among large-cap peers)
+============================================================ */
+const EXCLUSIVE_HOLDINGS = [
+  {name:"Bharti Airtel Ltd", weight:4.60, peerCount:2, why:"Only 2 of 9 peer large-cap funds carry Airtel above 3% — most peers stay underweight telecom on ARPU-growth skepticism.", conviction:88, alpha:"+0.62%", hist:"+55bps QoQ", impact:"High"},
+  {name:"UltraTech Cement Ltd", weight:2.28, peerCount:3, why:"A structural cement bet most large-cap peers avoid in favour of higher-weight financials; plays capex-cycle recovery.", conviction:74, alpha:"+0.21%", hist:"+8bps QoQ", impact:"Medium"},
+  {name:"Titan Company Ltd", weight:1.93, peerCount:4, why:"Consumer discretionary conviction name — peers with FMCG tilts prefer staples like HUL/ITC over jewellery retail.", conviction:81, alpha:"+0.34%", hist:"+27bps QoQ", impact:"Medium"},
+  {name:"Sun Pharmaceutical Ind.", weight:2.61, peerCount:3, why:"Healthcare weight (5.4%) runs well above the category average (~3.2%); most peers hold pharma as a minor satellite.", conviction:79, alpha:"+0.29%", hist:"+15bps QoQ", impact:"Medium"},
+  {name:"Mahindra & Mahindra Ltd", weight:1.39, peerCount:4, why:"Preferred over Tata Motors/Bajaj Auto held by most peers — SUV + tractor cycle thesis is fund-specific.", conviction:70, alpha:"+0.18%", hist:"+34bps QoQ", impact:"Low"},
+  {name:"NTPC Ltd", weight:1.58, peerCount:2, why:"Power-sector exposure via NTPC is thin across the category; most peers run near-zero utilities weight.", conviction:66, alpha:"+0.11%", hist:"+3bps QoQ", impact:"Low"}
+];
+
+/* ============================================================
+   PEER FUND UNIVERSE (Large Cap category)
+   Approximate figures compiled from public factsheets / fund
+   trackers (regular-plan basis where available). Risk-statistic
+   columns beyond AUM / TER / trailing CAGR are modelled estimates
+   for illustration — see footer disclosure.
+============================================================ */
+const PEER_FUNDS = [
+  {name:"Mirae Asset Large Cap Fund", self:true, aum:40184, ter:0.55, turnover:34, cagr1:3.8, cagr3:13.7, cagr5:12.6, alpha:1.4, beta:0.97, sharpe:0.71, sortino:0.98, stdDev:12.8, infoRatio:0.42, trackErr:3.1, maxDD:-11.4, pe:23.1, pb:3.9, divYield:1.1, cash:2.7, activeShare:68, conc:46.2, risk:"Very High"},
+  {name:"ICICI Prudential Large Cap Fund", aum:77452, ter:1.40, turnover:29, cagr1:-2.7, cagr3:14.2, cagr5:15.9, alpha:1.1, beta:1.01, sharpe:0.66, sortino:0.90, stdDev:13.4, infoRatio:0.31, trackErr:2.6, maxDD:-12.8, pe:22.4, pb:3.7, divYield:1.2, cash:3.5, activeShare:61, conc:41.5, risk:"Very High"},
+  {name:"HDFC Large Cap Fund", aum:39024, ter:1.00, turnover:26, cagr1:-0.2, cagr3:11.9, cagr5:13.5, alpha:0.6, beta:0.99, sharpe:0.58, sortino:0.81, stdDev:13.1, infoRatio:0.18, trackErr:2.9, maxDD:-13.6, pe:21.6, pb:3.5, divYield:1.3, cash:4.1, activeShare:57, conc:43.8, risk:"Very High"},
+  {name:"SBI Bluechip Fund", aum:48926, ter:0.90, turnover:22, cagr1:1.2, cagr3:12.8, cagr5:14.2, alpha:0.8, beta:0.95, sharpe:0.63, sortino:0.86, stdDev:12.4, infoRatio:0.24, trackErr:2.7, maxDD:-11.9, pe:22.9, pb:3.8, divYield:1.1, cash:3.0, activeShare:59, conc:39.6, risk:"Very High"},
+  {name:"Nippon India Large Cap Fund", aum:53227, ter:0.70, turnover:31, cagr1:-0.5, cagr3:14.1, cagr5:16.2, alpha:1.6, beta:1.03, sharpe:0.69, sortino:0.95, stdDev:13.9, infoRatio:0.36, trackErr:3.4, maxDD:-13.1, pe:23.8, pb:4.0, divYield:1.0, cash:1.9, activeShare:66, conc:44.7, risk:"Very High"},
+  {name:"Kotak Bluechip Fund", aum:10340, ter:1.74, turnover:38, cagr1:0.4, cagr3:12.1, cagr5:13.9, alpha:0.5, beta:0.98, sharpe:0.55, sortino:0.77, stdDev:12.9, infoRatio:0.15, trackErr:3.0, maxDD:-12.4, pe:21.9, pb:3.6, divYield:1.2, cash:3.8, activeShare:54, conc:40.2, risk:"Very High"},
+  {name:"Canara Robeco Bluechip Equity Fund", aum:16407, ter:1.64, turnover:24, cagr1:5.1, cagr3:15.2, cagr5:19.6, alpha:2.1, beta:0.93, sharpe:0.79, sortino:1.08, stdDev:12.1, infoRatio:0.48, trackErr:2.4, maxDD:-10.6, pe:24.5, pb:4.2, divYield:0.9, cash:2.2, activeShare:62, conc:42.9, risk:"Very High"},
+  {name:"Axis Bluechip Fund", aum:30913, ter:1.34, turnover:19, cagr1:-4.2, cagr3:9.8, cagr5:11.4, alpha:-0.9, beta:0.91, sharpe:0.41, sortino:0.58, stdDev:12.6, infoRatio:-0.12, trackErr:3.3, maxDD:-15.2, pe:25.6, pb:4.5, divYield:0.8, cash:5.2, activeShare:64, conc:45.8, risk:"Very High"},
+  {name:"DSP Top 100 Equity Fund", aum:7175, ter:1.30, turnover:33, cagr1:-2.6, cagr3:13.7, cagr5:11.7, alpha:0.3, beta:1.02, sharpe:0.52, sortino:0.73, stdDev:13.6, infoRatio:0.09, trackErr:3.2, maxDD:-13.9, pe:21.2, pb:3.4, divYield:1.3, cash:3.1, activeShare:58, conc:41.1, risk:"Very High"},
+  {name:"Aditya Birla SL Frontline Equity Fund", aum:29029, ter:1.02, turnover:27, cagr1:-2.4, cagr3:16.6, cagr5:14.1, alpha:0.9, beta:1.00, sharpe:0.60, sortino:0.83, stdDev:13.2, infoRatio:0.21, trackErr:2.8, maxDD:-12.9, pe:22.0, pb:3.6, divYield:1.1, cash:2.9, activeShare:55, conc:38.7, risk:"Very High"}
+];
+
+/* ============================================================
+   CATEGORY RANKING
+============================================================ */
+const CATEGORY_RANK = {
+  overall:"Top 10%", percentile:91,
+  metrics:[
+    {k:"Returns (5Y)", pct:64, note:"5th of 10 large-cap peers on trailing 5Y CAGR"},
+    {k:"Risk-adjusted (Sharpe)", pct:72, note:"Above-median Sharpe vs the peer set"},
+    {k:"Alpha vs Benchmark", pct:70, note:"Positive alpha, mid-upper tier of peers"},
+    {k:"Consistency", pct:81, note:"Low return dispersion across rolling windows"},
+    {k:"SIP Performance (10Y)", pct:76, note:"SIP XIRR ranks in the top quartile"},
+    {k:"Rolling Returns", pct:69, note:"Rolling 3Y returns beat category median ~69% of the time"}
+  ]
+};
+
+/* ============================================================
+   ROLLING RETURNS
+============================================================ */
+const ROLLING_RETURNS = [
+  {period:"1Y", best:34.8, worst:-18.2, avg:12.4, median:11.6, consistency:58, percentile:63},
+  {period:"3Y", best:24.1, worst:-2.4, avg:13.8, median:13.2, consistency:74, percentile:71},
+  {period:"5Y", best:19.6, worst:4.1, avg:14.2, median:13.9, consistency:86, percentile:78},
+  {period:"7Y", best:16.9, worst:6.8, avg:13.6, median:13.4, consistency:91, percentile:74},
+  {period:"10Y", best:15.7, worst:8.9, avg:13.1, median:12.9, consistency:94, percentile:69}
+];
+
+/* ============================================================
+   PORTFOLIO OVERLAP vs PEERS
+============================================================ */
+const OVERLAP = PEER_FUNDS.filter(f=>!f.self).map((f,i)=>({
+  name:f.name, overlap:[52,61,58,66,47,44,55,39,50][i]
+}));
+
+/* ============================================================
+   FUND BRAIN — causal signal graph
+============================================================ */
+const BRAIN_NODES = [
+  {id:"rates", tier:0, label:"Interest Rates", x:60, y:60, signal:"Easing cycle", tone:"green", note:"RBI rate-cut expectations are the dominant macro driver behind the fund's Banking overweight — lower rates support NIM stabilisation and credit growth for lenders."},
+  {id:"inflation", tier:0, label:"Inflation", x:60, y:160, signal:"Moderating", tone:"green", note:"Cooling inflation supports consumer discretionary names like Titan without forcing further rate hikes."},
+  {id:"global", tier:0, label:"Global Risk Sentiment", x:60, y:260, signal:"Neutral", tone:"blue", note:"IT services demand (export-linked) tracks US/EU growth sentiment — a key swing factor for the fund's 12.4% IT weight."},
+  {id:"banking", tier:1, label:"Banking", x:230, y:50, signal:"Overweight +4.3pp", tone:"accent", note:"Largest active bet in the portfolio at 34.4% combined (Banking + Financials) vs 30.1% benchmark — sized to benefit from margin stabilisation as rates ease."},
+  {id:"it", tier:1, label:"Information Technology", x:230, y:130, signal:"Building +60bps", tone:"accent", note:"Three straight quarters of IT weight increases, now marginally above benchmark on an export-demand recovery thesis."},
+  {id:"oil", tier:1, label:"Oil & Gas", x:230, y:210, signal:"Underweight -1.3pp", tone:"blue", note:"Deliberately underweight Reliance-heavy Oil & Gas versus benchmark — refining-margin volatility is viewed as an unrewarded risk."},
+  {id:"health", tier:1, label:"Healthcare", x:230, y:290, signal:"Overweight +1.1pp", tone:"accent", note:"Healthcare held nearly double the category-typical weight — a differentiated, less-crowded bet."},
+  {id:"hdfcbank", tier:2, label:"HDFC Bank", x:410, y:40, signal:"9.23% wt.", tone:"accent", note:"Single largest holding; a direct lever on the fund's rate-cycle thesis via NIM sensitivity."},
+  {id:"icicibank", tier:2, label:"ICICI Bank", x:410, y:100, signal:"8.55% wt.", tone:"accent", note:"Second-largest holding, reinforcing the Banking conviction alongside HDFC Bank."},
+  {id:"infosys", tier:2, label:"Infosys + TCS", x:410, y:160, signal:"8.15% wt.", tone:"blue", note:"Combined IT anchor positions — direct beneficiaries of any global tech-spend recovery."},
+  {id:"reliance", tier:2, label:"Reliance Industries", x:410, y:220, signal:"5.76% wt.", tone:"grey", note:"Sized below its benchmark weight, reflecting the fund's Oil & Gas underweight stance."},
+  {id:"airtel", tier:2, label:"Bharti Airtel", x:410, y:280, signal:"4.60% wt.", tone:"green", note:"The fund's standout exclusive bet — a telecom weight most peers don't carry at this size."},
+  {id:"nav", tier:3, label:"Fund NAV", x:570, y:160, signal:"₹115.41", tone:"white", note:"All signals converge here. Current positioning implies the fund's near-term NAV path is most sensitive to Banking sector direction, given its 34%+ combined weight."}
+];
+const BRAIN_EDGES = [
+  ["rates","banking"],["rates","hdfcbank"],["inflation","health"],["global","it"],
+  ["banking","hdfcbank"],["banking","icicibank"],["it","infosys"],["oil","reliance"],["health","airtel"],
+  ["hdfcbank","nav"],["icicibank","nav"],["infosys","nav"],["reliance","nav"],["airtel","nav"]
+];
+
+/* ============================================================
+   CAPITAL FLOW RIVER — sector rotation Q4 FY26 -> Q1 FY27
+============================================================ */
+const RIVER_FLOWS = [
+  {from:"Cash", to:"Banking", amt:2.6, color:T.accent},
+  {from:"Cash", to:"Telecom", amt:1.8, color:T.green},
+  {from:"FMCG", to:"Information Technology", amt:1.2, color:T.blue},
+  {from:"Consumer", to:"Consumer", amt:6.9, color:T.grey},
+  {from:"Auto", to:"Auto", amt:5.0, color:T.grey},
+  {from:"Banking", to:"Banking", amt:21.8, color:T.grey},
+  {from:"Information Technology", to:"Information Technology", amt:11.2, color:T.grey}
+];
+
+/* ============================================================
+   RISK EXPLOSION MAP — hidden shock sensitivity
+   impact = affected weight% x shock magnitude% x sensitivity beta
+============================================================ */
+const SHOCK_SCENARIOS = [
+  {name:"Banking Sector Correction", weight:34.4, shock:-15, beta:0.90, desc:"A sharp derating of PSU + private banks"},
+  {name:"IT Services Demand Shock", weight:12.4, shock:-20, beta:0.85, desc:"US/EU tech-spend slowdown hits export IT"},
+  {name:"Rate Spike (+150bps)", weight:34.4, shock:-9, beta:0.70, desc:"Unexpected hawkish RBI pivot"},
+  {name:"Oil Price Shock (+30%)", weight:5.76, shock:-12, beta:0.60, desc:"Crude spike pressures refining margins"},
+  {name:"Global Risk-Off Event", weight:100, shock:-8, beta:0.97, desc:"Broad-based flight to safety, beta-driven selloff"},
+  {name:"Telecom Tariff Reversal", weight:4.60, shock:-18, beta:0.75, desc:"Regulatory or competitive tariff rollback"}
+];
+
+/* ============================================================
+   FUND PULSE — composite health index (from DNA)
+============================================================ */
+function computeHealthIndex(){
+  const w = {Quality:.22, Risk:.12, Diversification:.16, Cash:.10, Stability:.18, Momentum:.10, Liquidity:.12};
+  let score = 0, wsum=0;
+  DNA.forEach(d=>{ if(w[d.key]!==undefined){ score += d.value*w[d.key]; wsum += w[d.key]; }});
+  return Math.round(score/wsum);
+}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+function fmtINR(n){ return "₹" + Math.round(n).toLocaleString("en-IN"); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function deltaHtml(v, suffix){
+  suffix = suffix===undefined ? "pp" : suffix;
+  const up = v>0, flat = v===0;
+  const color = flat?T.grey:(up?T.green:T.red);
+  const ic = flat?"minus":(up?"up":"down");
+  const sign = up ? "+" : "";
+  return `<span class="delta" style="color:${color}">${icon(ic,12,color)}${sign}${v.toFixed(2)}${suffix}</span>`;
+}
+function chip(text, tone){ return `<span class="chip ${tone||""}">${text}</span>`; }
+function eyebrow(text, iconName){ return `<div class="eyebrow">${icon(iconName,13,T.accent)}${text}</div>`; }
+
+/* ============================================================
+   SECTION: TOP BAR + HERO
+============================================================ */
+function renderTopBar(){
+  return `
+  <div class="topbar">
+    <div class="left">
+      <span class="mono" style="color:${T.accent};font-weight:700;letter-spacing:0.06em;">MIRAE·LC</span>
+      <span>NSE</span>
+      <span style="color:${T.green};display:flex;align-items:center;"><span class="live-dot"></span>LIVE</span>
+    </div>
+    <div class="right mono">
+      <span>NAV ₹${FUND.nav.toFixed(2)}</span>
+      <span>Updated ${FUND.updated}</span>
+    </div>
+  </div>`;
+}
+
+function renderHero(){
+  const kpis = [
+    {l:"AUM", v: fmtINR(FUND.aum) + " Cr"},
+    {l:"Expense Ratio", v: FUND.expenseRatio + "%"},
+    {l:"NAV", v: "₹" + FUND.nav.toFixed(2)},
+    {l:"Exit Load", v: FUND.exitLoad.split(" if")[0]},
+    {l:"Portfolio Turnover", v: FUND.turnover + "%"},
+    {l:"Fund Manager", v: FUND.manager},
+    {l:"Since Inception", v: FUND.inception},
+    {l:"Updated", v: FUND.updated}
+  ];
+  return `
+  <div class="hero">
+    <div>
+      <svg width="52" height="52" viewBox="0 0 52 52" style="margin-bottom:18px;">
+        <rect x="1" y="1" width="50" height="50" rx="12" fill="${T.accent}22" stroke="${T.accent}59"/>
+        <path d="M14 36 L20 16 L26 30 L32 16 L38 36" fill="none" stroke="${T.accent}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>${FUND.name}</h1>
+      <div class="amc">${FUND.amc}</div>
+      <div class="chiprow">
+        ${chip(FUND.category,"accent")}${chip(FUND.benchmark,"blue")}${chip(FUND.exchange)}${chip("Risk: "+FUND.risk,"green")}
+      </div>
+      <div class="mandate">${FUND.mandate}. Managed by ${FUND.manager} — ${FUND.managerTenure}.</div>
+    </div>
+    <div class="kpi-grid">
+      ${kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v mono">${k.v}</div></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: POSITIONING SIGNATURE
+============================================================ */
+function renderSignature(){
+  const seeds = [82,58,71,54,63,91,68,24,76,46];
+  const labels = ["Sector Alloc.","Market Cap","Risk","Quality","Growth","Value","Momentum","Cash","Diversification","Conviction"];
+  const N = 140, w=1200, h=200, mid=h/2;
+  let pts = [];
+  for(let i=0;i<N;i++){
+    const t=i/(N-1); let y=0;
+    seeds.forEach((s,idx)=>{
+      const freq=1.5+idx*0.9, amp=(s/100)*(9-idx*0.5);
+      y += Math.sin(t*Math.PI*freq+idx)*amp;
+    });
+    pts.push(y);
+  }
+  const path = pts.map((y,i)=>`${i===0?"M":"L"} ${(i/(pts.length-1))*w} ${mid-y*4.4}`).join(" ");
+  const mirror = pts.map((y,i)=>`${i===0?"M":"L"} ${(i/(pts.length-1))*w} ${mid+y*4.4}`).join(" ");
+
+  return `
+  <div class="card flat">
+    <div class="sig-head">
+      ${eyebrow("Mutual Fund Positioning Signature","activity")}
+      <div class="sig-head-row">
+        <div class="sig-desc">A unique waveform generated from sector allocation, market-cap mix, risk, quality, growth, value, momentum, cash, diversification and conviction — no two funds render alike.</div>
+        <div class="chiprow" style="margin-bottom:0;">${chip("Quality-led","accent")}${chip("Low cash","blue")}${chip("High conviction","green")}</div>
+      </div>
+    </div>
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:200px;display:block;margin-top:8px;">
+      <defs>
+        <linearGradient id="sigGradA" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="${T.accent}" stop-opacity="0.9"/>
+          <stop offset="50%" stop-color="${T.blue}" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="${T.green}" stop-opacity="0.9"/>
+        </linearGradient>
+        <linearGradient id="sigFade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${T.accent}" stop-opacity="0.16"/>
+          <stop offset="100%" stop-color="${T.accent}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="0" y1="${mid}" x2="${w}" y2="${mid}" stroke="${T.border}" stroke-width="1"/>
+      <path d="${path} L ${w} ${mid} L 0 ${mid} Z" fill="url(#sigFade)" opacity="0.5"/>
+      <path d="${path}" fill="none" stroke="url(#sigGradA)" stroke-width="2">
+        <animate attributeName="stroke-dasharray" from="0,4000" to="4000,0" dur="2.4s" fill="freeze"/>
+      </path>
+      <path d="${mirror}" fill="none" stroke="${T.blue}" stroke-width="1" opacity="0.35">
+        <animate attributeName="stroke-dasharray" from="0,4000" to="4000,0" dur="2.8s" fill="freeze"/>
+      </path>
+    </svg>
+    <div class="sig-strip">
+      ${seeds.map((s,i)=>`<div class="sig-cell"><div class="v">${s}</div><div class="l">${labels[i]}</div></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: POSITIONING COMPASS
+============================================================ */
+let compassSelected = COMPASS_POINTS.length-1;
+function renderCompass(){
+  const size=320, cx=size/2, cy=size/2, range=44;
+  const toPx = v => (v/50)*range;
+  const p = COMPASS_POINTS[compassSelected];
+
+  let pointsSvg = COMPASS_POINTS.map((pt,i)=>{
+    const px=cx+toPx(pt.x), py=cy-toPx(pt.y);
+    const isSel = i===compassSelected, isLast = i===COMPASS_POINTS.length-1;
+    let line = "";
+    if(i>0){
+      const prev = COMPASS_POINTS[i-1];
+      line = `<line x1="${cx+toPx(prev.x)}" y1="${cy-toPx(prev.y)}" x2="${px}" y2="${py}" stroke="${T.accent}59" stroke-width="1.4" stroke-dasharray="3,3"/>`;
+    }
+    return `<g style="cursor:pointer" onclick="selectCompass(${i})">${line}<circle cx="${px}" cy="${py}" r="${isLast?7:5}" fill="${isSel?T.accent:'#0E141C'}" stroke="${isLast?T.accent:T.grey}" stroke-width="${isSel?2:1.4}"/></g>`;
+  }).join("");
+
+  return `
+  <div class="card">
+    ${eyebrow("Positioning Compass","target")}
+    <div class="compass-body">
+      <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex-shrink:0;">
+        <circle cx="${cx}" cy="${cy}" r="${range}" fill="none" stroke="${T.border}"/>
+        <circle cx="${cx}" cy="${cy}" r="${range*0.66}" fill="none" stroke="${T.border}"/>
+        <circle cx="${cx}" cy="${cy}" r="${range*0.33}" fill="none" stroke="${T.border}"/>
+        <line x1="${cx-range-14}" y1="${cy}" x2="${cx+range+14}" y2="${cy}" stroke="${T.border}"/>
+        <line x1="${cx}" y1="${cy-range-14}" x2="${cx}" y2="${cy+range+14}" stroke="${T.border}"/>
+        <text x="${cx}" y="${cy-range-20}" text-anchor="middle" font-size="10" fill="${T.grey}" letter-spacing="0.1em">AGGRESSIVE</text>
+        <text x="${cx}" y="${cy+range+32}" text-anchor="middle" font-size="10" fill="${T.grey}" letter-spacing="0.1em">DEFENSIVE</text>
+        <text x="${cx+range+20}" y="${cy+4}" text-anchor="start" font-size="10" fill="${T.grey}" letter-spacing="0.1em">GROWTH</text>
+        <text x="${cx-range-20}" y="${cy+4}" text-anchor="end" font-size="10" fill="${T.grey}" letter-spacing="0.1em">VALUE</text>
+        ${pointsSvg}
+      </svg>
+      <div class="compass-side">
+        <div class="qbtn-row">
+          ${COMPASS_POINTS.map((pt,i)=>`<button class="qbtn mono ${i===compassSelected?'active':''}" onclick="selectCompass(${i})">${pt.q}</button>`).join("")}
+        </div>
+        <div class="label-sm">AI Explanation</div>
+        <p class="ai-note">${p.note}</p>
+        <div class="axis-row">
+          <div><div class="axis-label">Growth axis</div><div class="axis-val">${p.x>0?"+":""}${p.x}</div></div>
+          <div><div class="axis-label">Risk axis</div><div class="axis-val">${p.y>0?"+":""}${p.y}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function selectCompass(i){ compassSelected = i; document.getElementById("compass-slot").innerHTML = renderCompass(); }
+
+/* ============================================================
+   SECTION: PORTFOLIO DNA
+============================================================ */
+function renderDNA(){
+  const SEG = 20;
+  const rows = DNA.map(d=>{
+    const filled = Math.round((d.value/100)*SEG);
+    const segs = Array.from({length:SEG}).map((_,i)=>{
+      const col = i<SEG*0.5?T.accent:(i<SEG*0.8?T.blue:T.green);
+      return `<div class="dna-seg" data-filled="${i<filled?1:0}" style="background:rgba(255,255,255,0.06);" data-color="${col}"></div>`;
+    }).join("");
+    return `
+    <div class="dna-row">
+      <div class="dna-top"><span class="dna-name">${d.key}</span><span class="dna-val">${d.value}</span></div>
+      <div class="dna-segs">${segs}</div>
+      <div class="dna-note">${d.note}</div>
+    </div>`;
+  }).join("");
+  return `<div class="card">${eyebrow("Portfolio DNA","layers")}${rows}</div>`;
+}
+function animateDNA(){
+  document.querySelectorAll(".dna-seg").forEach((el,i)=>{
+    if(el.dataset.filled==="1"){
+      setTimeout(()=>{ el.style.background = el.dataset.color; }, (i%20)*18);
+    }
+  });
+}
+
+/* ============================================================
+   SECTION: PORTFOLIO FINGERPRINT
+============================================================ */
+let fpActive = null;
+function renderFingerprint(){
+  const size=280, cx=size/2, cy=size/2, baseR=22, gap=14.5;
+  const rings = FINGERPRINT_RINGS.map((r,i)=>{
+    const radius = baseR+i*gap;
+    const circ = 2*Math.PI*radius;
+    const dash = (r.value/100)*circ;
+    const isActive = fpActive===r.key;
+    const op = fpActive && !isActive ? 0.3 : 0.92;
+    const sw = isActive ? 7 : 5.5;
+    return `<g style="cursor:pointer" onmouseenter="setFp('${r.key}')" onmouseleave="setFp(null)">
+      <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="${sw}"/>
+      <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${r.color}" stroke-width="${sw}"
+        stroke-dasharray="${dash} ${circ}" stroke-linecap="round" opacity="${op}"
+        transform="rotate(-90 ${cx} ${cy})" style="transition:opacity .25s ease, stroke-width .25s ease;"/>
+    </g>`;
+  }).join("");
+
+  const side = fpActive
+    ? `<div class="label-sm">${fpActive}</div><p class="ai-note">${FINGERPRINT_RINGS.find(r=>r.key===fpActive).note}</p>`
+    : `<p class="fp-default">Hover any ring to see why that layer of the fingerprint takes its shape — from sector concentration at the core to factor exposure on the outer band.</p>`;
+
+  const legend = FINGERPRINT_RINGS.map(r=>`<span onmouseenter="setFp('${r.key}')" onmouseleave="setFp(null)"><i style="background:${r.color}"></i>${r.key}</span>`).join("");
+
+  return `
+  <div class="card">
+    ${eyebrow("Portfolio Fingerprint","fingerprint")}
+    <div class="fp-body">
+      <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex-shrink:0;">${rings}</svg>
+      <div class="fp-side">${side}<div class="fp-legend">${legend}</div></div>
+    </div>
+  </div>`;
+}
+function setFp(key){ fpActive = key; document.getElementById("fingerprint-slot").innerHTML = renderFingerprint(); }
+
+/* ============================================================
+   SECTION: BENCHMARK MIRROR
+============================================================ */
+function renderMirror(){
+  const maxV = Math.max(...BENCHMARK_MIRROR.flatMap(d=>[d.fund,d.bench]));
+  const rows = BENCHMARK_MIRROR.map(d=>`
+    <div class="mirror-row">
+      <div class="mirror-top"><span style="color:${T.white}">${d.label}</span><span class="mirror-vals">${d.fund.toFixed(1)} / ${d.bench.toFixed(1)}</span></div>
+      <div class="mirror-track">
+        <div class="mirror-bench" data-w="${(d.bench/maxV)*100}"></div>
+        <div class="mirror-fund" data-w="${(d.fund/maxV)*100}"></div>
+      </div>
+    </div>`).join("");
+  return `
+  <div class="card">
+    ${eyebrow("Benchmark Mirror — Fund vs NIFTY 100 TRI","compare")}
+    <div class="mirror-legend">
+      <span><i style="background:${T.accent}"></i>Mirae Asset Large Cap Fund</span>
+      <span><i style="background:${T.grey}"></i>NIFTY 100 TRI</span>
+    </div>
+    ${rows}
+  </div>`;
+}
+function animateMirror(){
+  document.querySelectorAll(".mirror-bench").forEach(el=>{ el.style.width = el.dataset.w+"%"; });
+  document.querySelectorAll(".mirror-fund").forEach(el=>{ el.style.width = el.dataset.w+"%"; });
+}
+
+/* ============================================================
+   SECTION: SECTOR TREEMAP
+============================================================ */
+let treemapExpanded = "Banking";
+function renderTreemap(){
+  const blocks = SECTORS.map(s=>{
+    const isOpen = treemapExpanded===s.name;
+    const d = +(s.weight-s.bench).toFixed(1);
+    return `<div class="tblock ${isOpen?'open':''}" style="flex-grow:${s.weight};flex-basis:${s.weight*6}px;" onclick="toggleSector('${s.name.replace(/'/g,"\\'")}')">
+      <div class="name">${s.name}</div>
+      <div class="bottom"><span class="wt mono">${s.weight}%</span>${deltaHtml(d)}</div>
+    </div>`;
+  }).join("");
+  let detail = "";
+  if(treemapExpanded && HOLDINGS_BY_SECTOR[treemapExpanded]){
+    detail = `<div class="sector-detail">
+      <div class="lbl">Holdings within ${treemapExpanded}</div>
+      <div class="sector-chips">${HOLDINGS_BY_SECTOR[treemapExpanded].map(h=>chip(h)).join("")}</div>
+    </div>`;
+  }
+  return `<div class="card">${eyebrow("Sector Treemap","grid")}<div class="treemap">${blocks}</div>${detail}</div>`;
+}
+function toggleSector(name){
+  treemapExpanded = treemapExpanded===name ? null : name;
+  document.getElementById("treemap-slot").innerHTML = renderTreemap();
+}
+
+/* ============================================================
+   SECTION: TOP HOLDINGS TABLE
+============================================================ */
+function renderHoldings(){
+  const rows = TOP_HOLDINGS.map(h=>`
+    <tr>
+      <td class="name">${h.name}</td>
+      <td class="grey right">${h.sector}</td>
+      <td class="right mono" style="color:${T.white}">${h.weight.toFixed(2)}%</td>
+      <td class="right">${deltaHtml(h.chg,"%")}</td>
+      <td class="grey right mono">${h.pe}x</td>
+      <td class="right">${chip(h.mcap,"blue")}</td>
+    </tr>`).join("");
+  return `
+  <div class="card flat">
+    <div style="padding:24px 24px 12px;">${eyebrow("Top Holdings","file")}</div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr>
+          <th style="text-align:left;">Company</th><th>Sector</th><th>Weight</th><th>Chg (QoQ)</th><th>P/E</th><th>Mkt Cap</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: FACTOR RADAR (custom SVG)
+============================================================ */
+function renderRadar(){
+  const axes = FACTOR_RADAR.map(d=>d.axis);
+  const N = axes.length;
+  const size = 320, cx = size/2, cy = size/2 - 6, R = 118;
+  const angle = i => (Math.PI*2*i/N) - Math.PI/2;
+  const ptFor = (val, i) => {
+    const r = (val/100)*R;
+    return [cx + r*Math.cos(angle(i)), cy + r*Math.sin(angle(i))];
+  };
+  const gridRings = [0.25,0.5,0.75,1].map(f=>{
+    const pts = axes.map((_,i)=>ptFor(f*100,i).join(",")).join(" ");
+    return `<polygon points="${pts}" fill="none" stroke="${T.border}" stroke-width="1"/>`;
+  }).join("");
+  const spokes = axes.map((a,i)=>{
+    const [x,y] = ptFor(100,i);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${T.border}" stroke-width="1"/>`;
+  }).join("");
+  const labels = axes.map((a,i)=>{
+    const [x,y] = ptFor(122,i);
+    return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="10.5" fill="${T.grey}">${a}</text>`;
+  }).join("");
+  function seriesPoly(key, color, fillOp, strokeW, dash){
+    const pts = axes.map((a,i)=>{
+      const row = FACTOR_RADAR[i];
+      return ptFor(row[key], i).join(",");
+    }).join(" ");
+    return `<polygon points="${pts}" fill="${color}" fill-opacity="${fillOp}" stroke="${color}" stroke-width="${strokeW}" ${dash?`stroke-dasharray="${dash}"`:""}/>`;
+  }
+  return `
+  <div class="card">
+    ${eyebrow("Factor Radar","target")}
+    <svg viewBox="0 0 ${size} ${size}" width="100%" height="300" style="display:block;margin:0 auto;">
+      ${gridRings}${spokes}
+      ${seriesPoly("Category",T.blue,0.05,1.2,"4 3")}
+      ${seriesPoly("Benchmark",T.grey,0.06,1.4)}
+      ${seriesPoly("Fund",T.accent,0.28,2)}
+      ${labels}
+    </svg>
+    <div class="radar-legend">
+      <span><i style="background:${T.accent}"></i>Fund</span>
+      <span><i style="background:${T.grey}"></i>Benchmark</span>
+      <span><i style="background:${T.blue}"></i>Category</span>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: EVOLUTION TIMELINE
+============================================================ */
+function renderEvolution(){
+  const cards = EVOLUTION.map((e,i)=>`
+    <div class="evo-card" style="min-width:290px;">
+      <div class="evo-top"><div class="evo-dot ${i===EVOLUTION.length-1?'current':''}"></div><span class="evo-q mono">${e.q}</span></div>
+      <div class="evo-headline">${e.headline}</div>
+      <div class="evo-change">${e.change}</div>
+      <div class="evo-lists">
+        <div><b>Added</b>${e.added.length?e.added.map(a=>`<div class="tag-add">+ ${a}</div>`).join(""):"<div>—</div>"}</div>
+        <div><b>Removed</b>${e.removed.length?e.removed.map(a=>`<div class="tag-rem">− ${a}</div>`).join(""):"<div>—</div>"}</div>
+        <div><b>Increased</b>${e.increased.map(a=>`<div>${a}</div>`).join("")}</div>
+        <div><b>Reduced</b>${e.reduced.map(a=>`<div>${a}</div>`).join("")}</div>
+      </div>
+      <div class="evo-sub" style="margin-top:8px;font-size:10.5px;color:var(--greyDim);">Sector rotation: ${e.sectorRotation} · Cash: ${e.cashChange}</div>
+      <div class="evo-ai">${icon("sparkles",12,T.accent)}<span>${e.ai}</span></div>
+    </div>`).join("");
+  return `<div class="card">${eyebrow("Portfolio Evolution — Quarter by Quarter","clock")}<div class="evo-scroll">${cards}</div></div>`;
+}
+
+/* ============================================================
+   SECTION: AI INSIGHTS
+============================================================ */
+function renderInsights(){
+  const tone = {High:"accent",Medium:"blue",Low:""};
+  const cards = AI_INSIGHTS.map(c=>`
+    <div class="card insight-card">
+      <div class="insight-top"><div class="insight-title">${c.title}</div>${chip(c.priority,tone[c.priority])}</div>
+      <p class="insight-body">${c.body}</p>
+      <div class="insight-meta"><span>Confidence <b class="mono">${c.confidence}%</b></span><span>Impact <b>${c.impact}</b></span></div>
+      <div class="insight-evidence">${icon("info",11,T.greyDim)}${c.evidence}</div>
+    </div>`).join("");
+  return `<div>${eyebrow("AI Insights","sparkles")}<div class="insights-grid">${cards}</div></div>`;
+}
+
+/* ============================================================
+   SECTION: PERFORMANCE ANALYTICS (custom SVG line/area charts)
+============================================================ */
+function lineChartSvg(series, keys, colors, dash, h){
+  h = h || 220;
+  const w = 560, padL=34, padR=8, padT=10, padB=24;
+  const allVals = series.flatMap(d=>keys.map(k=>d[k]));
+  const minV = Math.min(...allVals)-2, maxV = Math.max(...allVals)+2;
+  const xw = (w-padL-padR)/(series.length-1);
+  const yFor = v => padT + (1-(v-minV)/(maxV-minV))*(h-padT-padB);
+  const xFor = i => padL + i*xw;
+  let grid = "";
+  for(let g=0; g<4; g++){
+    const y = padT + g*(h-padT-padB)/3;
+    grid += `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="${T.border}"/>`;
+  }
+  const axisLabels = series.map((d,i)=>`<text x="${xFor(i)}" y="${h-6}" text-anchor="middle" font-size="9.5" fill="${T.greyDim}">${d.m}</text>`).join("");
+  const lines = keys.map((k,ki)=>{
+    const pts = series.map((d,i)=>`${xFor(i)},${yFor(d[k])}`).join(" ");
+    return `<polyline points="${pts}" fill="none" stroke="${colors[ki]}" stroke-width="${ki===0?2.2:1.4}" ${dash[ki]?`stroke-dasharray="${dash[ki]}"`:""}/>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">${grid}${lines}${axisLabels}</svg>`;
+}
+
+function areaChartSvg(series, key, color, h){
+  h = h || 190;
+  const w = 560, padL=30, padR=8, padT=10, padB=22;
+  const vals = series.map(d=>d[key]);
+  const minV = Math.min(...vals)-1, maxV = Math.max(1,Math.max(...vals)+1);
+  const xw = (w-padL-padR)/(series.length-1);
+  const yFor = v => padT + (1-(v-minV)/(maxV-minV))*(h-padT-padB);
+  const xFor = i => padL + i*xw;
+  const zeroY = yFor(0);
+  const pts = series.map((d,i)=>`${xFor(i)},${yFor(d[key])}`).join(" ");
+  const areaPath = `M ${xFor(0)},${zeroY} ` + series.map((d,i)=>`L ${xFor(i)},${yFor(d[key])}`).join(" ") + ` L ${xFor(series.length-1)},${zeroY} Z`;
+  let grid = "";
+  for(let g=0; g<4; g++){
+    const y = padT + g*(h-padT-padB)/3;
+    grid += `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="${T.border}"/>`;
+  }
+  const axisLabels = series.filter((_,i)=>i%2===0).map(d=>{
+    const i = series.indexOf(d);
+    return `<text x="${xFor(i)}" y="${h-4}" text-anchor="middle" font-size="9" fill="${T.greyDim}">${d.m}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+    <defs><linearGradient id="ddFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}
+    <path d="${areaPath}" fill="url(#ddFill)"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.8"/>
+    ${axisLabels}
+  </svg>`;
+}
+
+function renderPerformance(){
+  const returnsRows = Object.entries(RETURNS).map(([k,v])=>`
+    <div class="returns-row"><span class="returns-k">${k}</span><span class="returns-v">${v}%</span></div>`).join("");
+  const statsGrid = STATS.map(s=>`<div><div class="stat-k">${s.k}</div><div class="stat-v">${s.v}</div></div>`).join("");
+  return `
+  <div>
+    ${eyebrow("Performance Analytics","bar")}
+    <div class="perf-grid1">
+      <div class="card">
+        <div class="perf-label">Growth of ₹100 — Fund vs Benchmark (trailing 12M)</div>
+        ${lineChartSvg(GROWTH_SERIES, ["fund","bench"], [T.accent,T.grey], [null,"4 3"])}
+        <div class="radar-legend" style="justify-content:flex-start;margin-top:4px;">
+          <span><i style="background:${T.accent}"></i>Fund</span><span><i style="background:${T.grey}"></i>NIFTY 100 TRI</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="perf-label">Trailing Returns (CAGR)</div>
+        ${returnsRows}
+      </div>
+    </div>
+    <div class="perf-grid2">
+      <div class="card">
+        <div class="perf-label">Risk-Adjusted Statistics</div>
+        <div class="stats-grid">${statsGrid}</div>
+      </div>
+      <div class="card">
+        <div class="perf-label">Drawdown (trailing 12M)</div>
+        ${areaChartSvg(DRAWDOWN_SERIES, "dd", T.red)}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: EXECUTIVE SUMMARY
+============================================================ */
+function renderSummary(){
+  const cols = [
+    {title:"Strengths",items:SUMMARY.strengths,tone:T.green},
+    {title:"Weaknesses",items:SUMMARY.weaknesses,tone:T.red}
+  ];
+  const blocks = [
+    {title:"Portfolio Strategy",body:SUMMARY.strategy},
+    {title:"Sector Outlook",body:SUMMARY.sectorOutlook},
+    {title:"Risk Outlook",body:SUMMARY.riskOutlook},
+    {title:"Market Regime Suitability",body:SUMMARY.regime},
+    {title:"Expected Behaviour",body:SUMMARY.behaviour},
+    {title:"Investment Thesis",body:SUMMARY.thesis}
+  ];
+  const research = [
+    {title:"Why Choose This Fund Over Peers?",body:SUMMARY.whyOverPeers},
+    {title:"Key Differentiators",body:SUMMARY.differentiators},
+    {title:"Risk Factors",body:SUMMARY.riskFactors},
+    {title:"SIP Suitability",body:SUMMARY.sipSuitability},
+    {title:"Lumpsum Suitability",body:SUMMARY.lumpsumSuitability},
+    {title:"Best Investment Horizon",body:SUMMARY.horizon},
+    {title:"Ideal Investor Profile",body:SUMMARY.investorProfile},
+    {title:"Vs. Category Average",body:SUMMARY.vsCategory},
+    {title:"Vs. Benchmark",body:SUMMARY.vsBenchmark}
+  ];
+  return `
+  <div>
+    ${eyebrow("AI Research Summary — Institutional Report","shield")}
+    <div class="card summary-brief"><div class="lbl">Executive Brief</div><p>${SUMMARY.brief}</p></div>
+    <div class="summary-cols">
+      ${cols.map(c=>`<div class="card"><div class="lbl" style="color:${c.tone}">${c.title}</div><ul>${c.items.map(it=>`<li>${it}</li>`).join("")}</ul></div>`).join("")}
+    </div>
+    <div class="summary-blocks">
+      ${blocks.map(b=>`<div class="card"><div class="lbl">${b.title}</div><p>${b.body}</p></div>`).join("")}
+    </div>
+    <div class="label-sm" style="margin-top:24px;margin-bottom:12px;">Institutional Research Notes</div>
+    <div class="summary-blocks">
+      ${research.map(b=>`<div class="card"><div class="lbl">${b.title}</div><p>${b.body}</p></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: EXCLUSIVE PORTFOLIO HOLDINGS
+============================================================ */
+function renderExclusiveHoldings(){
+  const rows = EXCLUSIVE_HOLDINGS.map(h=>`
+    <div class="exh-row">
+      <div><div class="exh-name">${h.name}</div><div class="exh-sub">Weight ${h.weight.toFixed(2)}% · Held by ${h.peerCount}/9 peers · Impact ${chip(h.impact, h.impact==="High"?"accent":(h.impact==="Medium"?"blue":""))}</div></div>
+      <div class="badge-conv" title="Conviction Score">${h.conviction}</div>
+      <div class="mono" style="color:${T.green};font-size:12.5px;">${h.alpha} <span style="color:${T.greyDim};">alpha</span></div>
+      <div class="exh-why">${h.why}</div>
+      <div class="mono" style="color:${T.grey};font-size:11.5px;">${h.hist}</div>
+    </div>`).join("");
+  return `
+  <div class="card flat" style="padding:24px;">
+    ${eyebrow("Exclusive Portfolio Holdings","sparkles")}
+    <p class="ai-note" style="color:var(--grey);font-size:13px;margin-bottom:18px;">These stocks differentiate Mirae Asset Large Cap Fund from its peers — positions few or no other large-cap funds in the category carry at comparable weight.</p>
+    <div class="exh-head-row exh-head">
+      <div>Holding</div><div>Conviction</div><div>Alpha Contrib.</div><div>Why It's Unique</div><div>QoQ Trend</div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: PEER FUND ANALYSIS
+============================================================ */
+const PEER_METRIC_DEFS = [
+  {k:"aum",l:"AUM (₹ Cr)",fmt:v=>v.toLocaleString("en-IN"),higher:true},
+  {k:"ter",l:"Expense Ratio",fmt:v=>v.toFixed(2)+"%",higher:false},
+  {k:"turnover",l:"Turnover",fmt:v=>v+"%",higher:false},
+  {k:"cagr1",l:"1Y CAGR",fmt:v=>v.toFixed(1)+"%",higher:true},
+  {k:"cagr3",l:"3Y CAGR",fmt:v=>v.toFixed(1)+"%",higher:true},
+  {k:"cagr5",l:"5Y CAGR",fmt:v=>v.toFixed(1)+"%",higher:true},
+  {k:"alpha",l:"Alpha",fmt:v=>(v>0?"+":"")+v.toFixed(1)+"%",higher:true},
+  {k:"beta",l:"Beta",fmt:v=>v.toFixed(2),higher:false},
+  {k:"sharpe",l:"Sharpe",fmt:v=>v.toFixed(2),higher:true},
+  {k:"sortino",l:"Sortino",fmt:v=>v.toFixed(2),higher:true},
+  {k:"stdDev",l:"Std. Dev.",fmt:v=>v.toFixed(1)+"%",higher:false},
+  {k:"infoRatio",l:"Info Ratio",fmt:v=>v.toFixed(2),higher:true},
+  {k:"trackErr",l:"Track. Error",fmt:v=>v.toFixed(1)+"%",higher:false},
+  {k:"maxDD",l:"Max Drawdown",fmt:v=>v.toFixed(1)+"%",higher:true},
+  {k:"pe",l:"Portfolio P/E",fmt:v=>v.toFixed(1)+"x",higher:false},
+  {k:"pb",l:"Portfolio P/B",fmt:v=>v.toFixed(1)+"x",higher:false},
+  {k:"divYield",l:"Div. Yield",fmt:v=>v.toFixed(1)+"%",higher:true},
+  {k:"cash",l:"Cash Alloc.",fmt:v=>v.toFixed(1)+"%",higher:false},
+  {k:"activeShare",l:"Active Share",fmt:v=>v+"%",higher:true},
+  {k:"conc",l:"Top-10 Conc.",fmt:v=>v.toFixed(1)+"%",higher:false}
+];
+function renderPeerComparison(){
+  const rows = PEER_FUNDS.map(f=>{
+    const cells = PEER_METRIC_DEFS.map(m=>{
+      const vals = PEER_FUNDS.map(x=>x[m.k]);
+      const best = m.higher ? Math.max(...vals) : Math.min(...vals);
+      const isBest = f[m.k]===best;
+      return `<td class="right mono ${isBest?"best":""}">${m.fmt(f[m.k])}</td>`;
+    }).join("");
+    return `<tr class="${f.self?"self":""}"><td class="name">${f.name}${f.self?" (this fund)":""}</td>${cells}<td class="right">${chip(f.risk,"blue")}</td></tr>`;
+  }).join("");
+  const headCells = PEER_METRIC_DEFS.map(m=>`<th>${m.l}</th>`).join("");
+  return `
+  <div class="card flat" style="padding:24px;">
+    ${eyebrow("Peer Fund Analysis — Large Cap Category","compare")}
+    <p class="ai-note" style="color:var(--grey);font-size:13px;margin-bottom:16px;">Compared against the 9 largest peers in the same SEBI Large Cap category. <span style="color:${T.green};">Green</span> marks the category-best value on each metric.</p>
+    <div class="peer-scroll">
+      <table class="peer-table">
+        <thead><tr><th style="text-align:left;">Fund</th>${headCells}<th>Risk Grade</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: CATEGORY RANKING
+============================================================ */
+function renderCategoryRank(){
+  const tiles = [
+    {big:CATEGORY_RANK.overall,lbl:"Overall Category Rank"},
+    {big:CATEGORY_RANK.percentile+"th pct.",lbl:"Overall Percentile"},
+    {big:"1 / 10",lbl:"Turnover Discipline"},
+    {big:"3 / 10",lbl:"Expense Efficiency"}
+  ];
+  const bars = CATEGORY_RANK.metrics.map(m=>`
+    <div class="rank-bar-row">
+      <div class="rank-bar-k">${m.k}</div>
+      <div class="rank-bar-track"><div class="rank-bar-fill" data-w="${m.pct}"></div></div>
+      <div class="rank-bar-v">${m.pct}th pct.</div>
+    </div>`).join("");
+  return `
+  <div class="card">
+    ${eyebrow("Category Ranking","target")}
+    <div class="rank-grid">${tiles.map(t=>`<div class="rank-tile"><div class="big">${t.big}</div><div class="lbl2">${t.lbl}</div></div>`).join("")}</div>
+    <div class="rank-bars">${bars}</div>
+  </div>`;
+}
+function animateRankBars(){ document.querySelectorAll(".rank-bar-fill").forEach(el=>{ el.style.width = el.dataset.w+"%"; }); }
+
+/* ============================================================
+   SECTION: SIP ANALYSIS
+============================================================ */
+const ASSUMED_CAGR = RETURNS["5Y"]; // 12.63% — fund's trailing 5Y CAGR, used as the projection assumption
+const INFLATION = 5.5;
+const SIP_AMOUNTS = [500,1000,2000,5000,10000,25000,50000];
+const DURATIONS = [1,3,5,7,10,15,20];
+let sipAmount = 5000, sipYears = 10;
+function sipFV(monthlyAmt, years, ratePct){
+  const n = years*12, r = ratePct/100, i = Math.pow(1+r, 1/12)-1;
+  if(i===0) return monthlyAmt*n;
+  return monthlyAmt * ((Math.pow(1+i,n)-1)/i) * (1+i);
+}
+function renderSip(){
+  const invested = sipAmount*sipYears*12;
+  const fv = sipFV(sipAmount, sipYears, ASSUMED_CAGR);
+  const profit = fv-invested;
+  const realFv = fv/Math.pow(1+INFLATION/100, sipYears);
+  return `
+  <div class="card">
+    ${eyebrow("SIP Analysis","bar")}
+    <div class="label-sm">Monthly SIP Amount</div>
+    <div class="calc-amt-row">${SIP_AMOUNTS.map(a=>`<button class="qbtn mono ${a===sipAmount?'active':''}" onclick="setSip(${a},null)">₹${a.toLocaleString("en-IN")}</button>`).join("")}</div>
+    <div class="label-sm">Duration</div>
+    <div class="calc-dur-row">${DURATIONS.map(y=>`<button class="qbtn mono ${y===sipYears?'active':''}" onclick="setSip(null,${y})">${y}Y</button>`).join("")}</div>
+    <div class="calc-results">
+      <div class="calc-result"><div class="k">Total Investment</div><div class="v">${fmtINR(invested)}</div></div>
+      <div class="calc-result hi"><div class="k">Current Value (Projected)</div><div class="v">${fmtINR(fv)}</div></div>
+      <div class="calc-result"><div class="k">Total Profit</div><div class="v" style="color:${T.green}">${fmtINR(profit)}</div></div>
+      <div class="calc-result"><div class="k">Assumed CAGR / XIRR</div><div class="v">${ASSUMED_CAGR.toFixed(2)}%</div></div>
+      <div class="calc-result"><div class="k">Wealth Multiple</div><div class="v">${(fv/invested).toFixed(2)}x</div></div>
+      <div class="calc-result"><div class="k">Inflation-Adjusted Value</div><div class="v">${fmtINR(realFv)}</div></div>
+    </div>
+    <div class="calc-note">Projection assumes the fund's trailing 5Y CAGR of ${ASSUMED_CAGR.toFixed(2)}% continues unchanged and ${INFLATION}% annual inflation — a simplifying assumption, not a return guarantee. Actual SIP XIRR will vary with market timing and sequence of returns.</div>
+  </div>`;
+}
+function setSip(amt, yrs){
+  if(amt!==null) sipAmount=amt;
+  if(yrs!==null) sipYears=yrs;
+  document.getElementById("sip-slot").innerHTML = renderSip();
+  document.getElementById("svl-slot").innerHTML = renderSipVsLumpsum();
+}
+
+/* ============================================================
+   SECTION: LUMPSUM ANALYSIS
+============================================================ */
+const LUMP_AMOUNTS = [10000,50000,100000,500000,1000000,2500000,5000000,10000000];
+function fmtLumpLabel(v){
+  if(v>=10000000) return "₹"+(v/10000000)+" Cr";
+  if(v>=100000) return "₹"+(v/100000)+" L";
+  return "₹"+v.toLocaleString("en-IN");
+}
+let lumpAmount = 500000, lumpYears = 10;
+function renderLumpsum(){
+  const fv = lumpAmount*Math.pow(1+ASSUMED_CAGR/100, lumpYears);
+  const absReturn = ((fv-lumpAmount)/lumpAmount)*100;
+  const realFv = fv/Math.pow(1+INFLATION/100, lumpYears);
+  return `
+  <div class="card">
+    ${eyebrow("Lumpsum Analysis","bar")}
+    <div class="label-sm">Investment Amount</div>
+    <div class="calc-amt-row">${LUMP_AMOUNTS.map(a=>`<button class="qbtn mono ${a===lumpAmount?'active':''}" onclick="setLump(${a},null)">${fmtLumpLabel(a)}</button>`).join("")}</div>
+    <div class="label-sm">Holding Period</div>
+    <div class="calc-dur-row">${DURATIONS.map(y=>`<button class="qbtn mono ${y===lumpYears?'active':''}" onclick="setLump(null,${y})">${y}Y</button>`).join("")}</div>
+    <div class="calc-results">
+      <div class="calc-result"><div class="k">Current Value (Projected)</div><div class="v">${fmtINR(fv)}</div></div>
+      <div class="calc-result hi"><div class="k">CAGR (Assumed)</div><div class="v">${ASSUMED_CAGR.toFixed(2)}%</div></div>
+      <div class="calc-result"><div class="k">Absolute Return</div><div class="v" style="color:${T.green}">${absReturn.toFixed(1)}%</div></div>
+      <div class="calc-result"><div class="k">Wealth Multiple</div><div class="v">${(fv/lumpAmount).toFixed(2)}x</div></div>
+      <div class="calc-result"><div class="k">Inflation-Adjusted Value</div><div class="v">${fmtINR(realFv)}</div></div>
+      <div class="calc-result"><div class="k">Max Drawdown (Trailing 12M)</div><div class="v" style="color:${T.red}">-11.4%</div></div>
+    </div>
+    <div class="calc-note">Projection assumes the fund's trailing 5Y CAGR of ${ASSUMED_CAGR.toFixed(2)}% continues unchanged — actual point-to-point returns depend heavily on entry timing since a lumpsum carries full market-timing risk, unlike a SIP.</div>
+  </div>`;
+}
+function setLump(amt, yrs){
+  if(amt!==null) lumpAmount=amt;
+  if(yrs!==null) lumpYears=yrs;
+  document.getElementById("lump-slot").innerHTML = renderLumpsum();
+  document.getElementById("svl-slot").innerHTML = renderSipVsLumpsum();
+}
+
+/* ============================================================
+   SECTION: SIP vs LUMPSUM COMPARISON
+============================================================ */
+function renderSipVsLumpsum(){
+  const years = sipYears;
+  const sipInvested = sipAmount*years*12;
+  const sipFv = sipFV(sipAmount, years, ASSUMED_CAGR);
+  const lumpEquiv = sipInvested; // same total capital, deployed as lumpsum on day 1
+  const lumpFv = lumpEquiv*Math.pow(1+ASSUMED_CAGR/100, years);
+  const winner = lumpFv>sipFv ? "Lumpsum" : "SIP";
+  return `
+  <div class="card" id="svl-inner">
+    ${eyebrow("SIP vs Lumpsum — Same Capital, Same Period","compare")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:16px;">Comparing ${fmtINR(sipInvested)} invested as a ${years}-year SIP of ${fmtINR(sipAmount)}/mo vs. the same total as a day-one lumpsum, both at the assumed ${ASSUMED_CAGR.toFixed(2)}% CAGR.</p>
+    <div class="svl-grid">
+      <div class="svl-col">
+        <div class="lbl2">SIP</div>
+        <div class="svl-row"><span>Final Wealth</span><b>${fmtINR(sipFv)}</b></div>
+        <div class="svl-row"><span>Invested</span><b>${fmtINR(sipInvested)}</b></div>
+        <div class="svl-row"><span>Volatility Exposure</span><b>Lower</b></div>
+        <div class="svl-row"><span>Timing Risk</span><b>Averaged</b></div>
+      </div>
+      <div class="svl-col">
+        <div class="lbl2">Lumpsum</div>
+        <div class="svl-row"><span>Final Wealth</span><b>${fmtINR(lumpFv)}</b></div>
+        <div class="svl-row"><span>Invested</span><b>${fmtINR(lumpEquiv)}</b></div>
+        <div class="svl-row"><span>Volatility Exposure</span><b>Higher</b></div>
+        <div class="svl-row"><span>Timing Risk</span><b>Concentrated day-1</b></div>
+      </div>
+      <div class="svl-col" style="border-color:${T.accentLine}">
+        <div class="lbl2">AI Recommendation</div>
+        <p class="ai-note" style="font-size:12.5px;">Under a smooth, constant-CAGR assumption, <b>${winner}</b> compounds marginally more because full capital is deployed sooner. In practice SIP tends to win in choppy/declining markets by averaging entry price, while lumpsum wins coming out of a correction into a sustained up-cycle. Given the fund's low cash buffer and moderate concentration, a hybrid — lumpsum core plus SIP top-ups — is a reasonable middle path.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: ROLLING RETURNS
+============================================================ */
+function renderRollingReturns(){
+  const cards = ROLLING_RETURNS.map(r=>`
+    <div class="rr-card">
+      <div class="per">${r.period} Rolling</div>
+      <div class="rr-stat"><span>Best</span><b style="color:${T.green}">${r.best.toFixed(1)}%</b></div>
+      <div class="rr-stat"><span>Worst</span><b style="color:${T.red}">${r.worst.toFixed(1)}%</b></div>
+      <div class="rr-stat"><span>Average</span><b>${r.avg.toFixed(1)}%</b></div>
+      <div class="rr-stat"><span>Median</span><b>${r.median.toFixed(1)}%</b></div>
+      <div class="rr-stat"><span>Consistency</span><b>${r.consistency}/100</b></div>
+      <div class="rr-stat"><span>Category Percentile</span><b>${r.percentile}th</b></div>
+    </div>`).join("");
+  return `<div class="card">${eyebrow("Rolling Returns Analysis","activity")}<div class="rr-grid">${cards}</div></div>`;
+}
+
+/* ============================================================
+   SECTION: PEER HOLDINGS OVERLAP
+============================================================ */
+function renderOverlap(){
+  const rows = OVERLAP.map(o=>`
+    <div class="overlap-row">
+      <div class="overlap-name">${o.name}</div>
+      <div class="overlap-track"><div class="overlap-fill" data-w="${o.overlap}"></div></div>
+      <div class="overlap-pct">${o.overlap}%</div>
+    </div>`).join("");
+  return `
+  <div class="card">
+    ${eyebrow("Peer Holdings Overlap","layers")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:14px;">Portfolio overlap (common holdings by weight) against each peer. Lower overlap = more differentiated positioning.</p>
+    ${rows}
+    <div class="stats-grid" style="margin-top:16px;">
+      <div><div class="stat-k">Avg. Overlap vs Category</div><div class="stat-v">52%</div></div>
+      <div><div class="stat-k">Diversification Score</div><div class="stat-v">68/100</div></div>
+      <div><div class="stat-k">Active Share</div><div class="stat-v">68%</div></div>
+      <div><div class="stat-k">Exclusive Bets</div><div class="stat-v">6 stocks</div></div>
+    </div>
+  </div>`;
+}
+function animateOverlap(){ document.querySelectorAll(".overlap-fill").forEach(el=>{ el.style.width = el.dataset.w+"%"; }); }
+
+/* ============================================================
+   SECTION: FUND BRAIN — causal signal graph
+============================================================ */
+let brainSelected = "nav";
+function renderBrain(){
+  const byId = Object.fromEntries(BRAIN_NODES.map(n=>[n.id,n]));
+  const connected = new Set([brainSelected]);
+  BRAIN_EDGES.forEach(([a,b])=>{ if(a===brainSelected) connected.add(b); if(b===brainSelected) connected.add(a); });
+  const toneColor = t => ({accent:T.accent, green:T.green, blue:T.blue, grey:T.grey, white:T.white}[t]||T.grey);
+
+  const edges = BRAIN_EDGES.map(([a,b])=>{
+    const A=byId[a], B=byId[b];
+    const on = brainSelected && (a===brainSelected || b===brainSelected);
+    return `<line class="brain-edge" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"
+      stroke="${on?T.accent:T.border}" stroke-width="${on?2:1}" opacity="${!brainSelected||connected.has(a)&&connected.has(b)?1:0.15}"/>`;
+  }).join("");
+
+  const nodes = BRAIN_NODES.map(n=>{
+    const isSel = n.id===brainSelected;
+    const dim = brainSelected && !connected.has(n.id);
+    const r = n.tier===3?16:(n.tier===2?11:9);
+    return `<g class="brain-node" style="opacity:${dim?0.25:1}" onclick="selectBrain('${n.id}')">
+      <circle cx="${n.x}" cy="${n.y}" r="${r+10}" fill="transparent"/>
+      <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${isSel?toneColor(n.tone):'#0E141C'}" stroke="${toneColor(n.tone)}" stroke-width="${isSel?2.5:1.6}"/>
+      <text x="${n.x}" y="${n.y+r+13}" text-anchor="middle" style="pointer-events:none;">${n.label}</text>
+    </g>`;
+  }).join("");
+
+  const sel = byId[brainSelected];
+  const side = sel
+    ? `<div class="label-sm">${sel.label}</div><p class="ai-note" style="font-size:13.5px;">${sel.note}</p><span class="brain-signal" style="background:${toneColor(sel.tone)}22;color:${toneColor(sel.tone)};border:1px solid ${toneColor(sel.tone)}55;">${sel.signal}</span>`
+    : `<p class="brain-default">Click any node to trace how macro forces move through sectors and top holdings into the fund's NAV.</p>`;
+
+  return `
+  <div class="card">
+    ${eyebrow("Fund Brain — What's Driving This Fund, Right Now","sparkles")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:14px;">A live causal map from macro signals → sector tilts → top holdings → NAV. Click any node to trace its influence.</p>
+    <div class="brain-wrap">
+      <svg class="brain-svg" viewBox="0 0 620 340" width="100%" height="340">
+        <text class="brain-tier-lbl" x="60" y="18" text-anchor="middle">MACRO</text>
+        <text class="brain-tier-lbl" x="230" y="18" text-anchor="middle">SECTORS</text>
+        <text class="brain-tier-lbl" x="410" y="18" text-anchor="middle">HOLDINGS</text>
+        <text class="brain-tier-lbl" x="570" y="18" text-anchor="middle">OUTCOME</text>
+        ${edges}${nodes}
+      </svg>
+      <div class="brain-side">${side}</div>
+    </div>
+  </div>`;
+}
+function selectBrain(id){ brainSelected = id; document.getElementById("brain-slot").innerHTML = renderBrain(); }
+
+/* ============================================================
+   SECTION: CONVICTION GALAXY
+============================================================ */
+const GALAXY_COLORS = {"Banking":T.accent,"Financial Services":T.accent,"Information Technology":T.blue,
+  "Oil & Gas":T.grey,"Telecom":T.green,"Consumer":T.green,"Capital Goods":T.blue,"Auto":T.grey,
+  "Healthcare":T.green,"Power":T.grey};
+let galaxySelected = null;
+function renderGalaxy(){
+  const cx=160, cy=160;
+  const rings = [{r:64,cls:"orbit-slow"},{r:106,cls:"orbit-mid"},{r:146,cls:"orbit-fast"}];
+  const buckets = [[],[],[]];
+  TOP_HOLDINGS.forEach(h=>{ buckets[h.weight>=4?0:(h.weight>=1.5?1:2)].push(h); });
+
+  const ringSvg = rings.map((ring,ri)=>{
+    const stars = buckets[ri].map((h,i)=>{
+      const angle = (i/buckets[ri].length)*Math.PI*2;
+      const sx = cx+ring.r*Math.cos(angle), sy = cy+ring.r*Math.sin(angle);
+      const rad = 4+Math.sqrt(h.weight)*2.6;
+      const col = GALAXY_COLORS[h.sector]||T.grey;
+      const isSel = galaxySelected===h.name;
+      return `<g class="galaxy-star" onclick="selectGalaxy('${h.name.replace(/'/g,"\\'")}')">
+        <circle cx="${sx}" cy="${sy}" r="${rad}" fill="${col}" opacity="${isSel?1:0.85}" stroke="${isSel?T.white:'none'}" stroke-width="${isSel?1.6:0}"/>
+      </g>`;
+    }).join("");
+    return `<g class="galaxy-orbit ${ring.cls}" style="transform-origin:${cx}px ${cy}px;">${stars}</g>`;
+  }).join("");
+
+  const sel = TOP_HOLDINGS.find(h=>h.name===galaxySelected);
+  const excl = sel ? EXCLUSIVE_HOLDINGS.find(e=>e.name===sel.name) : null;
+  const side = sel
+    ? `<div class="label-sm">${sel.name}</div>
+       <p class="ai-note" style="font-size:13px;">${excl ? excl.why : `Weighted at ${sel.weight.toFixed(2)}% in ${sel.sector}, trading at ${sel.pe}x P/E. Positioned in the ${sel.weight>=4?'inner conviction ring':(sel.weight>=1.5?'core ring':'satellite ring')} of the portfolio's orbital structure.`}</p>
+       <div class="axis-row"><div><div class="axis-label">Weight</div><div class="axis-val">${sel.weight.toFixed(2)}%</div></div><div><div class="axis-label">QoQ Change</div><div class="axis-val">${sel.chg>0?"+":""}${sel.chg.toFixed(2)}%</div></div></div>`
+    : `<p class="fp-default">The fund's highest-conviction names orbit closest to the core. Distance from center = lower conviction sizing; star size = portfolio weight. Click any star.</p>`;
+
+  return `
+  <div class="card">
+    ${eyebrow("Conviction Galaxy","target")}
+    <div class="galaxy-wrap">
+      <svg class="galaxy-svg" viewBox="0 0 320 320" width="320" height="320">
+        ${rings.map(r=>`<circle class="galaxy-ring" cx="${cx}" cy="${cy}" r="${r.r}"/>`).join("")}
+        <circle cx="${cx}" cy="${cy}" r="20" fill="${T.accent}22" stroke="${T.accent}" stroke-width="1.4"/>
+        <circle cx="${cx}" cy="${cy}" r="7" fill="${T.accent}"/>
+        ${ringSvg}
+      </svg>
+      <div class="galaxy-side">${side}
+        <div class="fp-legend" style="margin-top:16px;">
+          <span><i style="background:${T.accent}"></i>Banking/Fin.</span>
+          <span><i style="background:${T.blue}"></i>IT/Cap. Goods</span>
+          <span><i style="background:${T.green}"></i>Telecom/Health/Cons.</span>
+          <span><i style="background:${T.grey}"></i>Auto/Oil/Power</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function selectGalaxy(name){ galaxySelected = galaxySelected===name?null:name; document.getElementById("galaxy-slot").innerHTML = renderGalaxy(); }
+
+/* ============================================================
+   SECTION: CAPITAL FLOW RIVER
+============================================================ */
+function renderRiver(){
+  const fromNames = [...new Set(RIVER_FLOWS.map(f=>f.from))];
+  const toNames = [...new Set(RIVER_FLOWS.map(f=>f.to))];
+  const w=640, h=280, leftX=90, rightX=550, padY=30;
+  const yFor = (arr,name) => padY + arr.indexOf(name)*((h-padY*2)/Math.max(1,arr.length-1||1));
+  const paths = RIVER_FLOWS.map(f=>{
+    const y1 = fromNames.length>1? yFor(fromNames,f.from) : h/2;
+    const y2 = toNames.length>1? yFor(toNames,f.to) : h/2;
+    const midX = (leftX+rightX)/2;
+    const sw = Math.max(1.5, f.amt*1.6);
+    return `<path d="M ${leftX} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${rightX} ${y2}" fill="none" stroke="${f.color}" stroke-width="${sw}" opacity="0.28"/>
+            <path class="river-flow" d="M ${leftX} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${rightX} ${y2}" fill="none" stroke="${f.color}" stroke-width="1.4" opacity="0.9"/>`;
+  }).join("");
+  const leftLabels = fromNames.map((n,i)=>`<text x="${leftX-10}" y="${(fromNames.length>1?yFor(fromNames,n):h/2)+4}" text-anchor="end" font-size="11" fill="${T.grey}">${n}</text>`).join("");
+  const rightLabels = toNames.map((n,i)=>`<text x="${rightX+10}" y="${(toNames.length>1?yFor(toNames,n):h/2)+4}" text-anchor="start" font-size="11" fill="${T.grey}">${n}</text>`).join("");
+  return `
+  <div class="card flat" style="padding:24px;">
+    ${eyebrow("Capital Flow River — Q4 FY26 → Q1 FY27","activity")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:6px;">Where capital moved between sectors last quarter. Ribbon width = weight moved; flowing dashes show direction.</p>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+      <text x="${leftX}" y="14" text-anchor="middle" font-size="10" fill="${T.greyDim}" letter-spacing="0.08em">Q4 FY26</text>
+      <text x="${rightX}" y="14" text-anchor="middle" font-size="10" fill="${T.greyDim}" letter-spacing="0.08em">Q1 FY27</text>
+      ${paths}${leftLabels}${rightLabels}
+    </svg>
+    <div class="river-legend">
+      <span><i style="background:${T.accent}"></i>Cash → Banking (+2.6%)</span>
+      <span><i style="background:${T.green}"></i>Cash → Telecom (+1.8%)</span>
+      <span><i style="background:${T.blue}"></i>FMCG → Technology (+1.2%)</span>
+      <span><i style="background:${T.grey}"></i>Held steady</span>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: WHAT-IF LAB — Future NAV Simulator
+============================================================ */
+let labYears = 7, labRate = "stable", labDelta = 0;
+const RATE_ADJ = {cut:1.2, stable:0, hike:-1.5};
+function labSeries(amount, years, ratePct){
+  const pts=[];
+  for(let y=0;y<=years;y++){ pts.push({y, v: amount*Math.pow(1+ratePct/100,y)}); }
+  return pts;
+}
+function labChartSvg(bear, base, bull){
+  const w=580,h=230,padL=46,padR=10,padT=14,padB=26;
+  const allV = [...bear,...base,...bull].map(p=>p.v);
+  const minV=Math.min(...allV), maxV=Math.max(...allV);
+  const years = base.length-1;
+  const xFor = y => padL + (y/years)*(w-padL-padR);
+  const yFor = v => padT + (1-(v-minV)/(maxV-minV||1))*(h-padT-padB);
+  const lineOf = arr => arr.map(p=>`${xFor(p.y)},${yFor(p.v)}`).join(" ");
+  const bandPath = `M ${bull.map(p=>`${xFor(p.y)},${yFor(p.v)}`).join(" L ")} L ${[...bear].reverse().map(p=>`${xFor(p.y)},${yFor(p.v)}`).join(" L ")} Z`;
+  let grid="";
+  for(let g=0;g<4;g++){ const y=padT+g*(h-padT-padB)/3; grid+=`<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="${T.border}"/>`; }
+  const axisLabels = base.filter(p=>p.y%Math.ceil(years/6||1)===0).map(p=>`<text x="${xFor(p.y)}" y="${h-6}" text-anchor="middle" font-size="9.5" fill="${T.greyDim}">Y${p.y}</text>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+    <defs><linearGradient id="labBand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${T.accent}" stop-opacity="0.22"/><stop offset="100%" stop-color="${T.accent}" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    ${grid}
+    <path d="${bandPath}" fill="url(#labBand)"/>
+    <polyline points="${lineOf(bull)}" fill="none" stroke="${T.green}" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <polyline points="${lineOf(base)}" fill="none" stroke="${T.accent}" stroke-width="2.4"/>
+    <polyline points="${lineOf(bear)}" fill="none" stroke="${T.red}" stroke-width="1.4" stroke-dasharray="3 3"/>
+    ${axisLabels}
+  </svg>`;
+}
+function renderLab(){
+  const amount = 100000;
+  const baseRate = ASSUMED_CAGR + RATE_ADJ[labRate] + labDelta;
+  const bandWidth = 6.2; // approx one std-dev band, illustrative
+  const bull = labSeries(amount, labYears, baseRate+bandWidth);
+  const base = labSeries(amount, labYears, baseRate);
+  const bear = labSeries(amount, labYears, Math.max(-95,baseRate-bandWidth));
+  const fBull = bull[bull.length-1].v, fBase = base[base.length-1].v, fBear = bear[bear.length-1].v;
+  return `
+  <div class="card">
+    ${eyebrow("Future NAV Simulator — What-If Laboratory","activity")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:16px;">Project ₹1,00,000 forward under different rate regimes. Band = illustrative ±1 std-dev range, not a statistical forecast.</p>
+    <div class="lab-scenario-row">
+      ${["cut","stable","hike"].map(r=>`<button class="qbtn mono ${labRate===r?'active':''}" onclick="setLabRate('${r}')">Rate ${r==="cut"?"Cut":(r==="stable"?"Stable":"Hike")}</button>`).join("")}
+    </div>
+    <div class="lab-slider-row">
+      <label>Horizon: <span class="lab-slider-val">${labYears} years</span></label>
+      <input type="range" min="1" max="15" value="${labYears}" oninput="setLabYears(this.value)"/>
+    </div>
+    <div class="lab-slider-row">
+      <label>Manual Market Adjustment: <span class="lab-slider-val">${labDelta>0?"+":""}${labDelta.toFixed(1)}pp / yr</span></label>
+      <input type="range" min="-5" max="5" step="0.5" value="${labDelta}" oninput="setLabDelta(this.value)"/>
+    </div>
+    ${labChartSvg(bear,base,bull)}
+    <div class="calc-results">
+      <div class="calc-result"><div class="k">Bear Case (Y${labYears})</div><div class="v" style="color:${T.red}">${fmtINR(fBear)}</div></div>
+      <div class="calc-result hi"><div class="k">Base Case (Y${labYears})</div><div class="v">${fmtINR(fBase)}</div></div>
+      <div class="calc-result"><div class="k">Bull Case (Y${labYears})</div><div class="v" style="color:${T.green}">${fmtINR(fBull)}</div></div>
+    </div>
+    <div class="calc-note">Base case = fund's trailing 5Y CAGR (${ASSUMED_CAGR.toFixed(2)}%) adjusted for the selected rate scenario and manual delta. This is a simplified deterministic illustration, not a Monte Carlo forecast or guarantee.</div>
+  </div>`;
+}
+function setLabRate(r){ labRate=r; document.getElementById("lab-slot").innerHTML = renderLab(); }
+function setLabYears(y){ labYears=+y; document.getElementById("lab-slot").innerHTML = renderLab(); }
+function setLabDelta(d){ labDelta=+d; document.getElementById("lab-slot").innerHTML = renderLab(); }
+
+/* ============================================================
+   SECTION: HIDDEN RISK DETECTOR — Risk Explosion Map
+============================================================ */
+function renderShockMap(){
+  const cards = SHOCK_SCENARIOS.map(s=>{
+    const impact = (s.weight/100)*s.shock*s.beta;
+    return `<div class="shock-bubble">
+      <div class="impact">${impact.toFixed(1)}%</div>
+      <div class="nm">${s.name}</div>
+      <div style="font-size:11px;color:var(--grey);margin-top:4px;">${s.desc}</div>
+      <div class="math">${s.weight}% wt. × ${s.shock}% shock × ${s.beta} β = ${impact.toFixed(1)}% NAV</div>
+    </div>`;
+  }).join("");
+  return `
+  <div class="card flat" style="padding:24px;">
+    ${eyebrow("Hidden Risk Detector — What Could Hurt This Portfolio","shield")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:16px;">Estimated NAV impact of six macro shock scenarios, computed directly from current sector weights. Hover to see the math.</p>
+    <div class="shock-grid">${cards}</div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: FUND PULSE — living health monitor
+============================================================ */
+function ecgPath(score){
+  const amp = 14 + (score/100)*26;
+  let d = "M 0 40 L 40 40";
+  for(let i=0;i<6;i++){
+    const bx = 40+i*90;
+    d += ` L ${bx+10} 40 L ${bx+18} ${40-amp*0.4} L ${bx+26} ${40+amp} L ${bx+34} ${40-amp*1.3} L ${bx+42} 40 L ${bx+90} 40`;
+  }
+  return d;
+}
+function renderPulse(){
+  const score = computeHealthIndex();
+  const color = score>=72?T.green:(score>=50?T.blue:T.red);
+  const vitals = [
+    {k:"Quality", v:DNA.find(d=>d.key==="Quality").value},
+    {k:"Diversification", v:DNA.find(d=>d.key==="Diversification").value},
+    {k:"Cash Buffer", v:DNA.find(d=>d.key==="Cash").value},
+    {k:"Stability", v:DNA.find(d=>d.key==="Stability").value},
+    {k:"Momentum", v:DNA.find(d=>d.key==="Momentum").value},
+    {k:"Liquidity", v:DNA.find(d=>d.key==="Liquidity").value}
+  ];
+  const vitalCards = vitals.map(v=>{
+    const c = v.v>=70?T.green:(v.v>=45?T.blue:T.red);
+    return `<div class="vital"><div class="k">${v.k}</div><div class="v">${v.v}/100</div><div class="vital-bar"><i style="width:${v.v}%;background:${c};"></i></div></div>`;
+  }).join("");
+  return `
+  <div class="card">
+    ${eyebrow("Fund Pulse — The Portfolio's Vital Signs","activity")}
+    <div class="pulse-wrap">
+      <div class="pulse-score">
+        <svg viewBox="0 0 580 80" width="220" height="60">
+          <path d="${ecgPath(score)}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="900" stroke-dashoffset="900">
+            <animate attributeName="stroke-dashoffset" values="900;0;900" dur="4.5s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+        <div class="num" style="color:${color}">${score}</div>
+        <div class="lbl3">Health Index / 100</div>
+      </div>
+      <div class="vitals-grid">${vitalCards}</div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   SECTION: DECISION REPLAY — Portfolio Time Machine
+============================================================ */
+let replayIndex = 0, replayPlaying = false, replayTimer = null;
+function renderReplay(){
+  const e = EVOLUTION[replayIndex];
+  const fillPct = (replayIndex/(EVOLUTION.length-1))*100;
+  const dots = EVOLUTION.map((ev,i)=>`<span class="${i===replayIndex?'active':''}" onclick="scrubReplay(${i})"></span>`).join("");
+  const lines = [
+    ...e.added.map(a=>`<div class="diff-line diff-add">+ added &nbsp;${a}</div>`),
+    ...e.removed.map(a=>`<div class="diff-line diff-rem">− removed &nbsp;${a}</div>`),
+    ...e.increased.map(a=>`<div class="diff-line diff-mod">↑ increased &nbsp;${a}</div>`),
+    ...e.reduced.map(a=>`<div class="diff-line diff-mod">↓ reduced &nbsp;${a}</div>`)
+  ].join("") || `<div class="diff-line" style="color:var(--greyDim)">No material changes this quarter.</div>`;
+  return `
+  <div class="card" id="replay-inner">
+    ${eyebrow("Decision Replay — Portfolio Time Machine","clock")}
+    <div class="replay-controls">
+      <button class="replay-play" onclick="toggleReplayPlay()">${icon(replayPlaying?"minus":"activity",14,T.accent)}</button>
+      <div class="replay-track"><div class="replay-fill" style="width:${fillPct}%"></div><div class="replay-dots">${dots}</div></div>
+      <span class="mono" style="font-size:12px;color:var(--grey);min-width:60px;text-align:right;">${e.q}</span>
+    </div>
+    <div class="evo-headline" style="margin-bottom:6px;">${e.headline}</div>
+    <div class="evo-change" style="margin-bottom:14px;">${e.change}</div>
+    <div class="replay-diff">${lines}</div>
+    <div class="evo-ai" style="margin-top:12px;">${icon("sparkles",12,T.accent)}<span>${e.ai}</span></div>
+  </div>`;
+}
+function scrubReplay(i){ replayIndex=i; document.getElementById("replay-slot").innerHTML = renderReplay(); }
+function toggleReplayPlay(){
+  replayPlaying = !replayPlaying;
+  if(replayPlaying){
+    replayTimer = setInterval(()=>{
+      replayIndex = (replayIndex+1)%EVOLUTION.length;
+      document.getElementById("replay-slot").innerHTML = renderReplay();
+    }, 1700);
+  } else {
+    clearInterval(replayTimer);
+  }
+  document.getElementById("replay-slot").innerHTML = renderReplay();
+}
+
+/* ============================================================
+   SECTION: RESEARCH COPILOT (live AI, grounded in fund context)
+============================================================ */
+const COPILOT_SUGGESTIONS = [
+  "Why is this fund overweight Banking?",
+  "Can this fund beat its benchmark next cycle?",
+  "Where is the hidden alpha in this portfolio?",
+  "What's the single biggest risk here?",
+  "Is this fund better than ICICI Prudential Bluechip?"
+];
+const FUND_CONTEXT = JSON.stringify({
+  fund: FUND, sectors: SECTORS.slice(0,10), topHoldings: TOP_HOLDINGS.slice(0,12),
+  exclusiveHoldings: EXCLUSIVE_HOLDINGS.map(h=>({name:h.name, weight:h.weight, why:h.why})),
+  returns: RETURNS, riskStats: STATS,
+  peerFunds: PEER_FUNDS.map(f=>({name:f.name, aum:f.aum, ter:f.ter, cagr5:f.cagr5, sharpe:f.sharpe, alpha:f.alpha})),
+  categoryRank: CATEGORY_RANK, summary: SUMMARY.brief
+});
+let copilotHistory = [];
+let copilotBusy = false;
+function renderCopilotLog(typing){
+  const log = document.getElementById("copilot-log");
+  if(!log) return;
+  const msgs = copilotHistory.map(m=>`<div class="copilot-msg ${m.role==='user'?'user':'ai'}">${m.role==='user'?esc(m.content):m.content}</div>`).join("");
+  const typingHtml = typing ? `<div class="copilot-msg ai"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>` : "";
+  log.innerHTML = msgs + typingHtml || `<div style="color:var(--greyDim);font-size:12.5px;">Ask anything about this fund — I'll answer from its live positioning data.</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+async function sendCopilot(text){
+  if(!text || !text.trim() || copilotBusy) return;
+  copilotBusy = true;
+  copilotHistory.push({role:"user", content:text.trim()});
+  renderCopilotLog(true);
+  try{
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6", max_tokens:1000,
+        system:"You are the Research Copilot embedded in an institutional terminal for the Mirae Asset Large Cap Fund. Answer ONLY from the JSON fund context provided; be concise (under 130 words), specific with numbers, and analytical, not promotional. If the context can't answer something, say so plainly rather than guessing.\n\nFUND CONTEXT:\n"+FUND_CONTEXT,
+        messages: copilotHistory.map(m=>({role:m.role, content:m.content}))
+      })
+    });
+    const data = await resp.json();
+    const out = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim() || "I couldn't generate a response — please try again.";
+    copilotHistory.push({role:"assistant", content:out});
+  }catch(e){
+    copilotHistory.push({role:"assistant", content:"⚠️ Copilot is temporarily unavailable. Please try again in a moment."});
+  }
+  copilotBusy = false;
+  renderCopilotLog(false);
+}
+function handleCopilotSend(){
+  const inp = document.getElementById("copilot-input");
+  const val = inp.value; inp.value="";
+  sendCopilot(val);
+}
+function handleCopilotKey(ev){ if(ev.key==="Enter") handleCopilotSend(); }
+function askCopilot(q){ sendCopilot(q); }
+function renderCopilot(){
+  return `
+  <div class="card flat" style="padding:24px;">
+    ${eyebrow("Research Copilot","sparkles")}
+    <p class="ai-note" style="font-size:13px;color:var(--grey);margin-bottom:14px;">A live AI analyst grounded in this terminal's fund, sector, holdings, peer and risk data — not a generic chatbot.</p>
+    <div class="copilot-chips">${COPILOT_SUGGESTIONS.map(q=>`<div class="copilot-chip" onclick="askCopilot('${q.replace(/'/g,"\\'")}')">${q}</div>`).join("")}</div>
+    <div class="copilot-log" id="copilot-log"><div style="color:var(--greyDim);font-size:12.5px;">Ask anything about this fund — I'll answer from its live positioning data.</div></div>
+    <div class="copilot-input-row">
+      <input id="copilot-input" type="text" placeholder="Ask the copilot about this fund…" onkeydown="handleCopilotKey(event)"/>
+      <button class="copilot-send" onclick="handleCopilotSend()">Ask</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   ROOT RENDER
+============================================================ */
+function render(){
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    ${renderTopBar()}
+    <div class="os-banner"><span class="dot"></span><span><b>Fund Intelligence OS</b> is live — 21 connected modules tracking macro, sectors, holdings, peers and risk in real time.</span></div>
+    ${renderHero()}
+    <div class="section-tight">${renderSignature()}</div>
+    <div class="section-tight" id="pulse-slot">${renderPulse()}</div>
+    <div class="section-tight" id="brain-slot">${renderBrain()}</div>
+    <div class="grid-compass">
+      <div id="compass-slot">${renderCompass()}</div>
+      <div>${renderDNA()}</div>
+    </div>
+    <div class="grid-2">
+      <div id="fingerprint-slot">${renderFingerprint()}</div>
+      ${renderMirror()}
+    </div>
+    <div class="section-tight" id="treemap-slot">${renderTreemap()}</div>
+    <div class="section-tight">${renderHoldings()}</div>
+    <div class="section" id="galaxy-slot">${renderGalaxy()}</div>
+    <div class="section">${renderExclusiveHoldings()}</div>
+    <div class="grid-radar">
+      ${renderRadar()}
+      ${renderEvolution()}
+    </div>
+    <div class="section" id="replay-slot">${renderReplay()}</div>
+    <div class="section">${renderRiver()}</div>
+    <div class="section">${renderInsights()}</div>
+    <div class="section">${renderPerformance()}</div>
+    <div class="section">${renderPeerComparison()}</div>
+    <div class="section">${renderCategoryRank()}</div>
+    <div class="section">${renderRollingReturns()}</div>
+    <div class="section">${renderOverlap()}</div>
+    <div class="section">${renderShockMap()}</div>
+    <div class="section" id="lab-slot">${renderLab()}</div>
+    <div class="grid-2">
+      <div id="sip-slot">${renderSip()}</div>
+      <div id="lump-slot">${renderLumpsum()}</div>
+    </div>
+    <div class="section" id="svl-slot">${renderSipVsLumpsum()}</div>
+    <div class="section">${renderCopilot()}</div>
+    <div class="section">${renderSummary()}</div>
+    <div class="footer-note">
+      Illustrative institutional research terminal built around Mirae Asset Large Cap Fund. AUM, expense ratio, and
+      trailing CAGR for this fund and its 9 large-cap peers are compiled from public factsheets and fund trackers
+      (regular-plan basis, approximate, as of Apr–Jul 2026). Risk-statistic columns beyond AUM/TER/CAGR (Sharpe,
+      Sortino, alpha, beta, active share, exclusive-holdings conviction scores, rolling-return distributions,
+      overlap percentages, category percentiles) — and the newer Fund Brain, Conviction Galaxy, Capital Flow River,
+      Risk Explosion Map and Fund Pulse modules — are representative model output built from this fund's disclosed
+      positioning, for design and illustration purposes, not computed from live portfolio feeds. SIP/Lumpsum/What-If
+      Lab projections use the fund's own trailing 5Y CAGR as a simplifying assumption — not a return guarantee, and
+      the What-If Lab's bear/bull band is an illustrative ±1 std-dev spread, not a statistical forecast. The
+      Research Copilot calls the Claude API live and answers only from this terminal's own data — it can still be
+      wrong, so verify anything decision-relevant. Nothing here is investment advice or an official fund disclosure;
+      verify all figures against the AMC factsheet before investing.
+    </div>
+  `;
+  requestAnimationFrame(()=>{
+    animateDNA();
+    animateMirror();
+    animateRankBars();
+    animateOverlap();
+    // count-up AUM / NAV
+    countUp(".kpi:nth-child(1) .v", FUND.aum, v=>fmtINR(v)+" Cr");
+    countUp(".kpi:nth-child(3) .v", FUND.nav, v=>"₹"+v.toFixed(2));
+  });
+}
+
+function countUp(selector, target, formatter){
+  const els = document.querySelectorAll(".kpi .v");
+  // fallback simple approach: animate first (AUM) and third (NAV) kpi directly by index
+}
+
+// Simpler count-up: animate AUM and NAV kpi cells directly by index after render
+function animateKpis(){
+  const kpiEls = document.querySelectorAll(".kpi .v");
+  if(kpiEls.length < 3) return;
+  const aumEl = kpiEls[0], navEl = kpiEls[2];
+  let start = null;
+  const dur = 1000;
+  function step(t){
+    if(!start) start = t;
+    const p = Math.min((t-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    aumEl.textContent = fmtINR(FUND.aum*eased) + " Cr";
+    navEl.textContent = "₹" + (FUND.nav*eased).toFixed(2);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+render();
+animateKpis();
+</script>
+</body>
+</html>

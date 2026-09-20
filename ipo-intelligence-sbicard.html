@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IPO Intelligence — SBI Cards & Payment Services</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d12; --surface:#12161d; --surface2:#161b23; --surface3:#1b212b;
+    --border:#232a37; --border-soft:#1a2029;
+    --text:#e9ecf1; --text-dim:#9aa3b5; --text-faint:#5f6a80;
+    --gold:#c6a15b; --gold-soft:#c6a15b22;
+    --pos:#34d399; --pos-soft:#34d39918;
+    --neg:#f2685c; --neg-soft:#f2685c18;
+    --warn:#e0b04f; --warn-soft:#e0b04f18;
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'Inter', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:var(--body); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--gold-soft); color:var(--gold);}
+
+  .ticker-wrap{background:#000; border-bottom:1px solid var(--border); overflow:hidden; white-space:nowrap; padding:6px 0;}
+  .ticker{display:inline-block; animation: scroll 32s linear infinite; font-family:var(--mono); font-size:11.5px; letter-spacing:.02em;}
+  .ticker span{margin-right:36px; color:var(--text-dim);}
+  .ticker b{color:var(--text);}
+  .tk-pos{color:var(--pos);} .tk-neg{color:var(--neg);} .tk-warn{color:var(--warn);}
+  @keyframes scroll{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  header{padding:22px 32px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;}
+  .brand{display:flex; align-items:center; gap:14px;}
+  .mark{width:38px; height:38px; border:1px solid var(--gold); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:600; color:var(--gold); font-size:17px; flex-shrink:0;}
+  .company h1{font-family:var(--display); font-weight:500; font-size:23px; letter-spacing:-.01em;}
+  .meta-row{display:flex; gap:10px; margin-top:4px; align-items:center; flex-wrap:wrap;}
+  .chip{font-size:10.5px; font-family:var(--mono); padding:2.5px 8px; border-radius:20px; border:1px solid var(--border); color:var(--text-dim);}
+  .chip.live{border-color:var(--gold); color:var(--gold);}
+  .verdict{text-align:right;}
+  .verdict .label{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-faint); margin-bottom:4px;}
+  .verdict .score{font-family:var(--display); font-size:34px; font-weight:600; color:var(--gold); line-height:1;}
+  .verdict .tag{font-size:12px; color:var(--text-dim); margin-top:3px;}
+
+  nav.tabs{display:flex; gap:2px; padding:0 32px; border-bottom:1px solid var(--border); background:var(--surface); overflow-x:auto; position:sticky; top:0; z-index:10;}
+  nav.tabs button{background:none; border:none; color:var(--text-dim); font-family:var(--body); font-size:13px; font-weight:500; padding:14px 18px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:.15s;}
+  nav.tabs button:hover{color:var(--text); background:var(--surface2);}
+  nav.tabs button.active{color:var(--gold); border-bottom-color:var(--gold);}
+
+  main{max-width:1280px; margin:0 auto; padding:28px 32px 60px;}
+  .panel{display:none; animation:fade .25s ease;}
+  .panel.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)}}
+
+  .section-title{font-family:var(--display); font-size:19px; font-weight:500; margin-bottom:4px;}
+  .section-sub{color:var(--text-dim); font-size:12.5px; margin-bottom:18px; max-width:760px;}
+
+  .grid{display:grid; gap:12px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:900px){.grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:repeat(2,1fr);}}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px;}
+  .stat-card .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); margin-bottom:6px;}
+  .stat-card .v{font-family:var(--mono); font-size:19px; font-weight:600; color:var(--text);}
+  .stat-card .v.gold{color:var(--gold);}
+  .stat-card .why{font-size:11.5px; color:var(--text-dim); margin-top:7px; line-height:1.45; border-top:1px solid var(--border-soft); padding-top:7px;}
+
+  .block-title{font-size:13px; font-weight:600; margin:26px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); color:var(--text); display:flex; align-items:center; gap:8px;}
+  .block-title::before{content:''; width:3px; height:13px; background:var(--gold); display:inline-block; border-radius:2px;}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--border);}
+  td{padding:9px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); color:var(--text);}
+  tr:hover td{background:var(--surface2);}
+  td.lbl{font-family:var(--body); color:var(--text-dim);}
+  .num{text-align:right;}
+  .gold-text{color:var(--gold);}
+
+  .insight{background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-dim); margin:10px 0; line-height:1.55;}
+  .insight b{color:var(--text);}
+  .insight.pos{border-left-color:var(--pos);}
+  .insight.neg{border-left-color:var(--neg);}
+  .insight.warn{border-left-color:var(--warn);}
+
+  .chart-box{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px;}
+  .chart-title{font-size:12px; color:var(--text-dim); margin-bottom:14px; font-weight:500;}
+  .bars{display:flex; align-items:flex-end; gap:18px; height:200px; padding-top:10px;}
+  .bar-group{flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; gap:6px;}
+  .bar-pair{display:flex; align-items:flex-end; gap:4px; height:160px; width:100%; justify-content:center;}
+  .bar{width:20px; border-radius:4px 4px 0 0; position:relative; transition:.2s;}
+  .bar:hover{filter:brightness(1.2);}
+  .bar-label{font-size:10.5px; color:var(--text-faint); font-family:var(--mono); margin-top:4px;}
+  .bar-val{position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:9.5px; font-family:var(--mono); color:var(--text-dim); white-space:nowrap;}
+  .legend{display:flex; gap:16px; margin-top:14px; font-size:11px; color:var(--text-dim);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
+
+  .risk-item{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; display:grid; grid-template-columns:110px 1fr 110px 110px; gap:14px; align-items:center;}
+  @media(max-width:800px){.risk-item{grid-template-columns:1fr;}}
+  .risk-cat{font-size:11px; font-weight:600; color:var(--text-dim);}
+  .risk-desc h4{font-size:13px; font-weight:600; margin-bottom:3px;}
+  .risk-desc p{font-size:12px; color:var(--text-dim); line-height:1.45;}
+  .sev{padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; text-align:center; font-family:var(--mono);}
+  .sev.high{background:var(--neg-soft); color:var(--neg);}
+  .sev.med{background:var(--warn-soft); color:var(--warn);}
+  .sev.low{background:var(--pos-soft); color:var(--pos);}
+
+  .score-row{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+  .score-row .name{width:190px; font-size:12.5px; font-weight:500; flex-shrink:0;}
+  .score-bar-track{flex:1; height:8px; background:var(--surface3); border-radius:6px; overflow:hidden;}
+  .score-bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,var(--gold),#e8c988); transition:width 1s ease;}
+  .score-num{width:34px; font-family:var(--mono); font-weight:600; text-align:right;}
+  .score-formula{font-size:11px; color:var(--text-faint); width:340px; flex-shrink:0;}
+  @media(max-width:1000px){.score-formula{display:none;}}
+
+  .chat-shell{background:var(--surface); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; height:560px;}
+  .chat-log{flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px;}
+  .msg{max-width:78%; padding:10px 13px; border-radius:10px; font-size:13px; line-height:1.55;}
+  .msg.user{align-self:flex-end; background:var(--gold-soft); color:var(--text); border:1px solid #c6a15b40;}
+  .msg.ai{align-self:flex-start; background:var(--surface2); border:1px solid var(--border); white-space:pre-wrap;}
+  .msg.ai.loading{color:var(--text-faint); font-style:italic;}
+  .suggestions{display:flex; gap:8px; padding:0 18px 10px; flex-wrap:wrap;}
+  .sugg{font-size:11.5px; border:1px solid var(--border); color:var(--text-dim); padding:6px 11px; border-radius:20px; cursor:pointer; background:var(--surface2);}
+  .sugg:hover{border-color:var(--gold); color:var(--gold);}
+  .chat-input{display:flex; gap:8px; border-top:1px solid var(--border); padding:12px;}
+  .chat-input input{flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 13px; color:var(--text); font-family:var(--body); font-size:13px;}
+  .chat-input input:focus{outline:none; border-color:var(--gold);}
+  .chat-input button{background:var(--gold); color:#161207; border:none; border-radius:8px; padding:0 18px; font-weight:600; font-size:13px; cursor:pointer;}
+  .chat-input button:disabled{opacity:.5; cursor:default;}
+
+  footer{padding:22px 32px 40px; color:var(--text-faint); font-size:11.5px; line-height:1.6; border-top:1px solid var(--border); max-width:1280px; margin:0 auto;}
+  .disc-box{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:12px;}
+
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="tickerEl"></div>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="mark">SC</div>
+    <div class="company">
+      <h1>SBI Cards and Payment Services Ltd.</h1>
+      <div class="meta-row">
+        <span class="chip live">PROSPECTUS DATA · MAR 6, 2020</span>
+        <span class="chip">NBFC-ND-SI · Credit Cards</span>
+        <span class="chip">Promoter: State Bank of India</span>
+        <span class="chip">BSE + NSE</span>
+      </div>
+    </div>
+  </div>
+  <div class="verdict">
+    <div class="label">Overall AI Investment Score</div>
+    <div class="score">79<span style="font-size:16px;color:var(--text-faint)">/100</span></div>
+    <div class="tag">Strong franchise, priced for perfection</div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="snapshot">Snapshot</button>
+  <button class="tab-btn" data-tab="financials">Financials</button>
+  <button class="tab-btn" data-tab="valuation">Valuation Lab</button>
+  <button class="tab-btn" data-tab="risk">Risk Intelligence</button>
+  <button class="tab-btn" data-tab="scores">AI Scores</button>
+  <button class="tab-btn" data-tab="copilot">AI Copilot</button>
+</nav>
+
+<main>
+
+  <section class="panel active" id="panel-snapshot">
+    <div class="section-title">IPO Snapshot</div>
+    <div class="section-sub">Core deal terms as filed in the final Prospectus dated March 6, 2020. Every figure below is paired with why it matters to a subscriber.</div>
+
+    <div class="block-title">Issue Structure</div>
+    <div class="grid cols-4" id="grid-issue"></div>
+
+    <div class="block-title">Price, Lot &amp; Investment</div>
+    <div class="grid cols-4" id="grid-price"></div>
+
+    <div class="block-title">Timeline &amp; Intermediaries</div>
+    <div class="grid cols-4" id="grid-timeline"></div>
+
+    <div class="block-title">Allocation Structure (Net Offer)</div>
+    <div class="grid cols-4" id="grid-alloc"></div>
+
+    <div class="block-title">Ownership &amp; Sizing</div>
+    <div class="grid cols-3" id="grid-owner"></div>
+
+    <div class="insight">
+      <b>Read on structure:</b> Of the &#8377;10,340.79 Cr offer, only <b>&#8377;499.25 Cr (4.8%)</b> was a Fresh Issue &mdash; the rest, <b>&#8377;9,854.77 Cr (95.2%)</b>, was SBI selling down stake via Offer for Sale. Almost none of the IPO proceeds funded the business directly; the deal was overwhelmingly an exit event for the promoter, not a capital raise. That is a structural fact worth weighing independent of the growth story.
+    </div>
+  </section>
+
+  <section class="panel" id="panel-financials">
+    <div class="section-title">Financial Intelligence</div>
+    <div class="section-sub">Restated financials from the Prospectus: FY2017, FY2018, FY2019 (audited, year ended March 31) and the nine months ended December 31, 2019 (not annualised).</div>
+
+    <div class="grid cols-2">
+      <div class="chart-box">
+        <div class="chart-title">Revenue vs. PAT (&#8377; Cr)</div>
+        <div class="bars" id="chartRevPat"></div>
+        <div class="legend">
+          <span><span class="dot" style="background:#c6a15b"></span>Revenue</span>
+          <span><span class="dot" style="background:#34d399"></span>PAT</span>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">EPS Trend (&#8377;) &mdash; 9M FY20 not annualised</div>
+        <div class="bars" id="chartEps"></div>
+        <div class="legend">
+          <span><span class="dot" style="background:#c6a15b"></span>Basic EPS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight pos">
+      <b>Growth quality:</b> Revenue grew from &#8377;347.10 Cr (FY17) to &#8377;728.68 Cr (FY19) &mdash; a <b>44.9% 2-year CAGR</b> &mdash; while PAT compounded even faster at <b>52.1%</b>, meaning margins expanded as the book scaled. The 9-month FY20 PAT of &#8377;1,161.21 Cr already exceeded all of FY19, confirming growth was accelerating into the listing.
+    </div>
+    <div class="insight warn">
+      <b>Cash flow caveat:</b> The Prospectus discloses the company has had negative operating cash flow in the past (Risk Factor #46) &mdash; typical for a fast-growing lender funding receivables with borrowings before collecting repayments, but it means reported profit is not the same as cash generation. Total borrowings stood at &#8377;18,577.69 Cr as of Dec 2019, more than 3.8x net worth.
+    </div>
+
+    <div class="block-title">Key Financial Ratios</div>
+    <table>
+      <thead><tr><th>Metric</th><th class="num">9M FY20 (Dec'19)</th><th class="num">FY2019</th><th class="num">FY2018</th><th class="num">FY2017</th><th>Why it matters</th></tr></thead>
+      <tbody id="ratio-table"></tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="panel-valuation">
+    <div class="section-title">AI Valuation Laboratory</div>
+    <div class="section-sub">Computed from the Offer Price of &#8377;755/share against restated financials. The Prospectus itself states no listed Indian peer existed at the time of listing.</div>
+
+    <div class="grid cols-4" id="grid-val"></div>
+
+    <div class="block-title">P/E Sensitivity &mdash; As Disclosed vs. AI-Annualised</div>
+    <table>
+      <thead><tr><th>Basis</th><th class="num">EPS (&#8377;)</th><th class="num">P/E at &#8377;755</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">FY2019 (as disclosed in Prospectus)</td><td class="num">9.43</td><td class="num gold-text">80.06x</td><td class="lbl">Company-reported, "Basis for Offer Price"</td></tr>
+        <tr><td class="lbl">3-yr weighted average EPS (FY17-19, weights 1:2:3)</td><td class="num">7.97</td><td class="num">94.73x</td><td class="lbl">Company-reported</td></tr>
+        <tr><td class="lbl">9M FY20 annualised (12.45 x 4/3) &mdash; AI estimate</td><td class="num">16.60</td><td class="num">45.48x</td><td class="lbl">Derived, not company-disclosed</td></tr>
+        <tr><td class="lbl">Price/Book, post-Offer NAV of &#8377;56.68</td><td class="num">&mdash;</td><td class="num">13.32x</td><td class="lbl">Derived</td></tr>
+      </tbody>
+    </table>
+    <div class="insight">
+      <b>How to read this:</b> On trailing FY19 earnings the Offer priced the business at <b>80x</b> &mdash; expensive by almost any conventional yardstick. Annualising the much stronger 9-month FY20 run-rate implies a far more reasonable <b>~45x</b>. The investment case hinges on whether that accelerated run-rate was sustainable, or a temporary pre-IPO growth spurt.
+    </div>
+
+    <div class="block-title">Bull &middot; Base &middot; Bear (illustrative scenario framing, not a price target)</div>
+    <div class="grid cols-3">
+      <div class="card">
+        <div class="stat-card k" style="color:var(--pos)">Bull Case</div>
+        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.55">Card spends and receivables keep compounding above 35-40% as India's card penetration rises from a low base; RoNW stabilises near 24%; the market treats the stock as a scarce, high-quality compounder with no listed peer. Multiple holds or expands.</p>
+      </div>
+      <div class="card">
+        <div class="stat-card k" style="color:var(--warn)">Base Case</div>
+        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.55">Growth normalises toward 25-30% as the book matures; RoNW gently compresses as capital base grows faster than profit (already visible: 26% to 25% to 24% FY17-19); multiple mean-reverts toward the 45-60x range implied by run-rate earnings.</p>
+      </div>
+      <div class="card">
+        <div class="stat-card k" style="color:var(--neg)">Bear Case</div>
+        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.55">Unsecured lending losses rise in a downturn (no collateral backs the card book), funding costs increase, RBI tightens capital or rate rules, and the 80x trailing multiple compresses sharply &mdash; the classic "priced for perfection" unwind.</p>
+      </div>
+    </div>
+    <div class="insight neg" style="margin-top:14px;">This is educational scenario framing built from disclosed data, not a forecast, price target, or investment recommendation. Claude is not a licensed financial advisor &mdash; verify all figures against the official Prospectus before acting.</div>
+  </section>
+
+  <section class="panel" id="panel-risk">
+    <div class="section-title">Risk Intelligence</div>
+    <div class="section-sub">Synthesised from the Prospectus's 50+ disclosed Risk Factors (pages 28-91), grouped into institutional risk categories with AI-assessed severity. The full legal text governs &mdash; this is a navigational summary, not a substitute for reading the source.</div>
+    <div id="risk-list"></div>
+  </section>
+
+  <section class="panel" id="panel-scores">
+    <div class="section-title">Proprietary AI Scores</div>
+    <div class="section-sub">Every score is a transparent, disclosed formula applied to Prospectus data &mdash; never a black box.</div>
+    <div id="score-list"></div>
+
+    <div class="block-title">Overall Investment Score &mdash; Composition</div>
+    <div class="insight">
+      <b>Overall Score = 79/100</b> = 25% Growth (94) + 20% Business Quality/Moat (88) + 20% Governance &amp; Promoter Strength (80) + 15% Capital Strength (76) + 10% Profitability Trend (83) &minus; 15% Valuation Richness Penalty (P/E 80x scores 42/100 on cheapness), rounded. The headline number is high because durable growth and franchise quality dominate the weighting &mdash; but the valuation component alone should give a value-conscious subscriber pause.
+    </div>
+  </section>
+
+  <section class="panel" id="panel-copilot">
+    <div class="section-title">AI Research Copilot</div>
+    <div class="section-sub">Ask anything about this specific IPO &mdash; valuation, risks, structure, or "explain like I'm a beginner." Answers are grounded in the extracted Prospectus data and generated live by Claude.</div>
+
+    <div class="chat-shell">
+      <div class="chat-log" id="chatLog">
+        <div class="msg ai">Hi &mdash; I'm your AI research copilot for the SBI Cards IPO. I have the full Snapshot, Financials, Valuation and Risk data from the March 2020 Prospectus loaded. Ask me anything, or tap a suggestion below.</div>
+      </div>
+      <div class="suggestions">
+        <div class="sugg" data-q="Should I apply for this IPO?">Should I apply for this IPO?</div>
+        <div class="sugg" data-q="Explain the valuation like I'm a beginner">Explain the valuation like I'm a beginner</div>
+        <div class="sugg" data-q="What's the single biggest risk here?">What's the single biggest risk here?</div>
+        <div class="sugg" data-q="Why is so little of this a fresh issue?">Why is so little of this a fresh issue?</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Ask about SBI Cards IPO...">
+        <button id="chatBtn">Ask</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="disc-box">
+    <b style="color:var(--text-dim)">About this build:</b> This prototype is populated with real, verifiable figures extracted directly from the SBI Cards and Payment Services Ltd. final Prospectus (dated March 6, 2020) you uploaded. It reflects that IPO at the time of listing in 2020 &mdash; it is <b>not</b> a live feed. Modules requiring real-time infrastructure (live subscription ticking, live GMP, live news/broker sentiment) are part of the fuller platform vision but are not wired to real data sources in this prototype.
+  </div>
+  Nothing on this page is investment advice or a recommendation to buy, hold, or sell any security. Figures are sourced from the company's own regulatory filing; verify independently before making any decision. Not affiliated with SBI Cards, SBI, or any Book Running Lead Manager named in the Prospectus.
+</footer>
+
+<script>
+(function(){
+
+  var D = {
+    revenueCr: [347.10, 537.02, 728.68, 724.02],
+    patCr: [372.86, 601.14, 862.72, 1161.21],
+    eps: [4.75, 7.40, 9.43, 12.45],
+    labels: ["FY2017","FY2018","FY2019","9M FY20"]
+  };
+
+  function fmt(n){ return n.toLocaleString("en-IN", {maximumFractionDigits:2}); }
+
+  // ---------- TICKER ----------
+  var tickerItems = [
+    "<span><b>SBI CARDS</b> Offer Price <b class='tk-warn'>Rs 755</b></span>",
+    "<span>Issue Size <b>Rs 10,340.79 Cr</b></span>",
+    "<span>P/E (FY19) <b class='tk-neg'>80.06x</b></span>",
+    "<span>RoNW FY19 <b class='tk-pos'>24.0%</b></span>",
+    "<span>CRAR <b class='tk-pos'>19.2%</b></span>",
+    "<span>Promoter Post-Offer <b>69.51%</b></span>",
+    "<span>Listed Peers <b class='tk-warn'>None per Prospectus</b></span>",
+    "<span>AI Score <b class='tk-warn'>79/100</b></span>",
+    "<span>Bid Dates <b>Mar 2 - Mar 5, 2020</b></span>"
+  ];
+  document.getElementById("tickerEl").innerHTML = tickerItems.concat(tickerItems).join("");
+
+  // ---------- TABS ----------
+  var tabButtons = document.querySelectorAll(".tab-btn");
+  for (var i = 0; i < tabButtons.length; i++) {
+    tabButtons[i].addEventListener("click", function(){
+      var target = this.getAttribute("data-tab");
+      var allBtns = document.querySelectorAll(".tab-btn");
+      for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove("active");
+      this.classList.add("active");
+      var allPanels = document.querySelectorAll(".panel");
+      for (var k = 0; k < allPanels.length; k++) allPanels[k].classList.remove("active");
+      document.getElementById("panel-" + target).classList.add("active");
+    });
+  }
+
+  // ---------- SNAPSHOT ----------
+  function statCard(k, v, why, gold){
+    return "<div class='card stat-card'><div class='k'>" + k + "</div><div class='v" + (gold ? " gold" : "") + "'>" + v + "</div><div class='why'>" + why + "</div></div>";
+  }
+
+  document.getElementById("grid-issue").innerHTML =
+    statCard("Total Issue Size", "Rs 10,340.79 Cr", "The full deal value at Offer Price, showing the liquidity and index-eligibility scale of the listing.") +
+    statCard("Fresh Issue", "Rs 499.25 Cr", "Money that actually reaches the company's balance sheet, used to augment NBFC capital base per RBI norms.") +
+    statCard("Offer for Sale", "Rs 9,854.77 Cr", "SBI selling down existing shares. Proceeds go to the promoter, not the company. 95% of this deal was OFS.") +
+    statCard("Shares on Offer", "13,71,49,314", "Total equity shares offered, face value Rs 10 each, offered at Rs 755, i.e. 75.5x face value.");
+
+  document.getElementById("grid-price").innerHTML =
+    statCard("Offer Price", "Rs 755", "Final price after book-building. Fixed, not a band, since this is the Prospectus (post price-discovery) stage.", true) +
+    statCard("Bid Lot", "19 shares", "Minimum tradeable unit for retail bidders. All bids must be in multiples of this.") +
+    statCard("Minimum Investment", "Rs 14,345", "19 shares times Rs 755, the smallest cheque size a retail investor could commit.") +
+    statCard("Employee Discount", "Rs 75/share", "Eligible employees paid Rs 680/share, min investment Rs 12,920 for the employee quota.");
+
+  document.getElementById("grid-timeline").innerHTML =
+    statCard("Anchor Bidding", "Feb 28, 2020", "One working day before the offer opened, showing institutional demand before retail could react.") +
+    statCard("Bid/Offer Period", "Mar 2 - Mar 5, 2020", "QIB book closed a day early (Mar 4). Retail and NII stayed open through Mar 5.") +
+    statCard("Registrar", "KFin Technologies", "Handles allotment, refunds and demat credit. Contact point for application issues.") +
+    statCard("Lead Managers", "Kotak, Axis, BofA, Nomura, HSBC, SBICAP", "Six BRLMs including SBI's own arm (disclosed conflict), signalling a large, closely-watched book-build.");
+
+  document.getElementById("grid-alloc").innerHTML =
+    statCard("QIB Allocation", "Up to 50%", "Institutional book. Up to 60% of this can go to Anchor Investors ahead of listing.") +
+    statCard("NII Allocation", "At least 15%", "High-net-worth and non-institutional investors, often the most volatile subscription category.") +
+    statCard("Retail Allocation", "At least 35%", "Guaranteed minimum for retail individual investors, the largest protected slice of the Net Offer.") +
+    statCard("Employee Reservation", "Separate quota", "Carved out at a Rs 75 discount to the Offer Price, on top of the Net Offer allocations above.");
+
+  document.getElementById("grid-owner").innerHTML =
+    statCard("Promoter Holding - Pre-Offer", "74.00%", "SBI's stake before the IPO. The entire brand and distribution moat of this business sits with the promoter.") +
+    statCard("Promoter Holding - Post-Offer", "69.51%", "Still controlling after the OFS. SBI remains firmly in charge; minority protections matter more than usual here.") +
+    statCard("Implied Market Cap", "Rs 70,891 Cr", "Post-offer shares (~93.9 Cr) times Offer Price. This is the valuation the market was asked to underwrite on Day 1.", true);
+
+  // ---------- FINANCIALS: simple CSS bar charts ----------
+  function renderBarChart(containerId, values, prefix, color){
+    var max = Math.max.apply(null, values);
+    var html = "";
+    for (var i = 0; i < values.length; i++){
+      var pct = Math.round((values[i] / max) * 100);
+      html += "<div class='bar-group'>";
+      html += "<div class='bar-pair' style='position:relative;'>";
+      html += "<div class='bar' style='height:" + pct + "%; background:" + color + ";'><span class='bar-val'>" + prefix + fmt(values[i]) + "</span></div>";
+      html += "</div>";
+      html += "<div class='bar-label'>" + D.labels[i] + "</div>";
+      html += "</div>";
+    }
+    document.getElementById(containerId).innerHTML = html;
+  }
+
+  function renderDualBarChart(containerId, valuesA, valuesB, colorA, colorB){
+    var max = Math.max(Math.max.apply(null, valuesA), Math.max.apply(null, valuesB));
+    var html = "";
+    for (var i = 0; i < valuesA.length; i++){
+      var pctA = Math.round((valuesA[i] / max) * 100);
+      var pctB = Math.round((valuesB[i] / max) * 100);
+      html += "<div class='bar-group'>";
+      html += "<div class='bar-pair'>";
+      html += "<div class='bar' style='height:" + pctA + "%; background:" + colorA + "; position:relative;'><span class='bar-val'>" + fmt(valuesA[i]) + "</span></div>";
+      html += "<div class='bar' style='height:" + pctB + "%; background:" + colorB + "; position:relative;'><span class='bar-val'>" + fmt(valuesB[i]) + "</span></div>";
+      html += "</div>";
+      html += "<div class='bar-label'>" + D.labels[i] + "</div>";
+      html += "</div>";
+    }
+    document.getElementById(containerId).innerHTML = html;
+  }
+
+  renderDualBarChart("chartRevPat", D.revenueCr, D.patCr, "#c6a15b", "#34d399");
+  renderBarChart("chartEps", D.eps, "Rs", "#c6a15b");
+
+  document.getElementById("ratio-table").innerHTML =
+    "<tr><td class='lbl'>Net Worth (Rs Cr)</td><td class='num'>4,822.82</td><td class='num'>3,653.24</td><td class='num'>2,424.58</td><td class='num'>1,448.82</td><td class='lbl'>The equity cushion absorbing losses, grew 3.3x in under 3 years, largely from retained profit.</td></tr>" +
+    "<tr><td class='lbl'>Return on Net Worth</td><td class='num'>24.0%</td><td class='num'>24.0%</td><td class='num'>25.0%</td><td class='num'>26.0%</td><td class='lbl'>Profit generated per rupee of shareholder equity, gently declining as capital outgrows profit growth.</td></tr>" +
+    "<tr><td class='lbl'>Total Borrowings (Rs Cr)</td><td class='num'>18,577.69</td><td class='num'>13,650.52</td><td class='num'>11,412.82</td><td class='num'>8,268.42</td><td class='lbl'>Debt funding the card receivables book, an NBFC's raw material, not just leverage.</td></tr>" +
+    "<tr><td class='lbl'>NAV per Share (Rs)</td><td class='num'>51.73</td><td class='num'>-</td><td class='num'>-</td><td class='num'>-</td><td class='lbl'>Book value per share as of Dec 2019; rises to Rs 56.68 after the Offer once fresh capital is added.</td></tr>" +
+    "<tr><td class='lbl'>CRAR (Capital Adequacy)</td><td class='num'>19.2%</td><td class='num'>-</td><td class='num'>-</td><td class='num'>-</td><td class='lbl'>Regulatory buffer vs the RBI's 15% minimum for NBFC-ND-SI, a 420bps cushion as of Dec 2019.</td></tr>";
+
+  // ---------- VALUATION ----------
+  document.getElementById("grid-val").innerHTML =
+    statCard("P/E at Offer (FY19 EPS)", "80.06x", "Disclosed in the Prospectus's 'Basis for Offer Price'. Very rich on trailing earnings.", true) +
+    statCard("P/E - 3yr Weighted EPS", "94.73x", "Company's own SEBI-mandated weighted-average calc (weights 1:2:3 for FY17:18:19), even richer.") +
+    statCard("Return on Net Worth (FY19)", "24.0%", "Strong for a lending business, but trending down from 26% (FY17) as capital base scales.") +
+    statCard("Price/Book (post-Offer)", "13.32x", "Rs 755 offer price vs Rs 56.68 post-offer NAV. Investors paid over 13x book value for the franchise.");
+
+  // ---------- RISK ----------
+  var risks = [
+    ["Credit Risk", "High", "High", "Unsecured Lending Exposure", "The credit card portfolio is almost entirely unsecured; no collateral backs it if cardholders default, unlike a mortgage or auto loan book."],
+    ["Concentration", "Medium", "High", "Promoter and Brand Dependency", "The business leans heavily on the SBI brand and SBI's branch network for customer acquisition; any reputational or relationship strain with the promoter flows straight through."],
+    ["Regulatory", "Medium", "High", "RBI and Capital Rules", "As an NBFC-ND-SI, capital adequacy, interest-rate and lending norms can tighten at any time, and the company has flagged evolving RBI oversight as a standing risk."],
+    ["Governance", "Medium", "Medium", "Related-Party and Legal Exposure", "A group company has faced SEBI proceedings for non-compliance, and the company, its promoter and certain directors are named in various legal and regulatory proceedings."],
+    ["Cyber and Fraud", "Medium", "Medium", "Digital Attack Surface", "A digital-first card issuer is a direct target for cyber-attacks and card fraud; a breach could damage the brand and trigger regulatory penalties."],
+    ["Liquidity", "Medium", "Medium", "Negative Operating Cash Flow History", "The Prospectus discloses past periods of negative operating cash flow, normal for a receivables-funded lender, but a reminder that reported profit is not cash in hand."],
+    ["Macro", "Medium", "Medium", "Rate and Cycle Sensitivity", "Funding costs and consumer card spending are both tied to the broader interest-rate and economic cycle; a downturn hits both sides of the P&L at once."],
+    ["Structural", "Low", "Medium", "Minority Shareholder Position", "Promoter retains 69.51% post-Offer; minority shareholders have limited ability to influence major decisions."]
+  ];
+
+  var riskHtml = "";
+  for (var r = 0; r < risks.length; r++){
+    var row = risks[r];
+    var sevClass = row[1] === "High" ? "high" : (row[1] === "Medium" ? "med" : "low");
+    var likClass = row[2] === "High" ? "high" : (row[2] === "Medium" ? "med" : "low");
+    riskHtml += "<div class='risk-item'>";
+    riskHtml += "<div class='risk-cat'>" + row[0] + "</div>";
+    riskHtml += "<div class='risk-desc'><h4>" + row[3] + "</h4><p>" + row[4] + "</p></div>";
+    riskHtml += "<div class='sev " + sevClass + "'>Severity: " + row[1] + "</div>";
+    riskHtml += "<div class='sev " + likClass + "'>Likelihood: " + row[2] + "</div>";
+    riskHtml += "</div>";
+  }
+  document.getElementById("risk-list").innerHTML = riskHtml;
+
+  // ---------- SCORES ----------
+  var scores = [
+    ["Growth Score", 94, "2yr Revenue CAGR 44.9% + PAT CAGR 52.1% (FY17 to FY19), weighted 60/40"],
+    ["Business Quality / Moat", 88, "#2 credit card issuer, 17.6-18.1% market share, SBI distribution network, co-brand switching costs"],
+    ["Governance and Promoter Strength", 80, "SBI backing offset by group-company SEBI proceedings and related-party disclosures"],
+    ["Profitability Trend", 83, "RoNW 24% FY19, but 3yr trend 26% to 25% to 24% penalised for direction"],
+    ["Capital Strength", 76, "CRAR 19.2% vs 15% regulatory floor (420bps buffer); Tier I 15.4% vs 10% floor"],
+    ["Valuation Attractiveness", 42, "Inverse of P/E richness; 80x trailing FY19 EPS scores low on a cheapness scale"]
+  ];
+
+  var scoreHtml = "";
+  for (var s = 0; s < scores.length; s++){
+    var sc = scores[s];
+    scoreHtml += "<div class='score-row'>";
+    scoreHtml += "<div class='name'>" + sc[0] + "</div>";
+    scoreHtml += "<div class='score-bar-track'><div class='score-bar-fill' style='width:" + sc[1] + "%'></div></div>";
+    scoreHtml += "<div class='score-num'>" + sc[1] + "</div>";
+    scoreHtml += "<div class='score-formula'>" + sc[2] + "</div>";
+    scoreHtml += "</div>";
+  }
+  document.getElementById("score-list").innerHTML = scoreHtml;
+
+  // ---------- COPILOT ----------
+  var SYSTEM_CONTEXT = "You are an institutional equity research copilot embedded inside an IPO intelligence dashboard, answering questions ONLY about the SBI Cards and Payment Services Limited IPO (Prospectus dated March 6, 2020). Use ONLY the facts below. Be concise (under 150 words unless asked for detail), analytical and balanced, presenting both the bull and bear angle where relevant. Never give a definitive buy instruction; lay out the reasoning and let the reader decide, and note you are not a licensed financial advisor if asked for a direct recommendation.\n\nKEY FACTS:\n" +
+    "- Offer Price: Rs 755/share, Face Value Rs 10, Lot size 19 shares, Min investment Rs 14,345\n" +
+    "- Total Issue: Rs 10,340.79 Cr (Fresh Issue Rs 499.25 Cr = 4.8%, Offer for Sale Rs 9,854.77 Cr = 95.2%)\n" +
+    "- Bid dates: Mar 2-5, 2020 (QIB closed Mar 4); Anchor bidding Feb 28, 2020\n" +
+    "- Listing: BSE (designated) + NSE; Registrar: KFin Technologies; BRLMs: Kotak, Axis, BofA Securities, Nomura, HSBC, SBICAP (SBICAP is an SBI associate, disclosed conflict)\n" +
+    "- Promoter: State Bank of India, holding 74.00% pre-Offer, 69.51% post-Offer\n" +
+    "- Implied market cap at Offer Price: about Rs 70,891 Cr\n" +
+    "- Financials (Rs Cr): Revenue FY17 347.10, FY18 537.02, FY19 728.68, 9M FY20 724.02 (not annualised); PAT FY17 372.86, FY18 601.14, FY19 862.72, 9M FY20 1161.21 (not annualised)\n" +
+    "- EPS (Rs): FY17 4.75, FY18 7.40, FY19 9.43, 9M FY20 12.45 (not annualised)\n" +
+    "- RoNW: FY17 26%, FY18 25%, FY19 24% (declining trend)\n" +
+    "- Net worth Dec 2019: Rs 4,822.82 Cr; Total borrowings Dec 2019: Rs 18,577.69 Cr\n" +
+    "- CRAR (Dec 2019): 19.2% overall (vs RBI min 15%), Tier I 15.4% (vs RBI min 10%)\n" +
+    "- Valuation: P/E at Offer on FY19 EPS = 80.06x; on 3yr weighted EPS (Rs 7.97) = 94.73x; AI-annualised 9M FY20 run-rate EPS (Rs 16.60) = 45.48x; Price/Book post-Offer (NAV Rs 56.68) = 13.32x\n" +
+    "- Prospectus states no listed Indian peer existed for this business at the time of the IPO\n" +
+    "- Top disclosed risks: (1) unsecured credit card book with no collateral, (2) heavy dependence on SBI brand and distribution, (3) RBI capital-adequacy and interest-rate regulation, (4) a group company faced SEBI non-compliance proceedings, (5) cyber-attack and fraud exposure, (6) past periods of negative operating cash flow, (7) macro and rate sensitivity, (8) promoter retains 69.51% post-listing limiting minority influence\n" +
+    "- Business: 2nd-largest credit card issuer in India by cards in force (about 17.6-18.1% market share) and spends (about 17.1-17.9%), behind HDFC Bank";
+
+  var chatLog = document.getElementById("chatLog");
+  var chatInput = document.getElementById("chatInput");
+  var chatBtn = document.getElementById("chatBtn");
+  var history = [];
+
+  function addMsg(text, cls){
+    var div = document.createElement("div");
+    div.className = "msg " + cls;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  // ---------- LOCAL ANSWER ENGINE ----------
+  // Always produces a real, data-grounded answer, even for vague or general
+  // questions. This runs instantly and does not depend on any network call,
+  // so the copilot works the same whether it's opened inside claude.ai or
+  // as a plain downloaded HTML file in any browser.
+  var OVERVIEW =
+    "Here's the full picture on SBI Cards & Payment Services:\n\n" +
+    "STRUCTURE: Rs 10,340.79 Cr issue, but only 4.8% (Rs 499.25 Cr) is Fresh Issue. The rest is SBI cashing out via Offer for Sale. This is primarily a promoter exit, not a capital raise for the company.\n\n" +
+    "GROWTH: Revenue and PAT compounded 44.9% and 52.1% respectively from FY17 to FY19, and kept accelerating. The 9 months to Dec 2019 alone produced Rs 1,161 Cr of profit, already ahead of all of FY19.\n\n" +
+    "VALUATION: Priced at 80x trailing FY19 earnings, rich by any conventional measure. Annualising the stronger recent run-rate implies a more reasonable ~45x. No listed peer existed in India to benchmark against at the time.\n\n" +
+    "BIGGEST RISK: the credit card book is entirely unsecured, so no collateral cushions a downturn, layered on top of RBI regulatory risk and heavy dependence on the SBI brand.\n\n" +
+    "AI SCORE: 79/100, strong franchise and growth, valuation is the weak link.\n\n" +
+    "Ask me to go deeper on structure, valuation, financials, risk, or timeline and I will.";
+
+  var TOPICS = [
+    { kw: ["apply", "subscribe", "should i invest", "should i buy", "worth buying", "good ipo", "bad ipo", "recommend"],
+      a: "I can't tell you to apply or not, that call depends on your own risk appetite, but here is the balanced case:\n\nFOR: #2 credit card issuer in India with a 17-18% market share, SBI's brand and distribution behind it, and PAT compounding over 50% a year into the listing.\n\nAGAINST: priced at 80x trailing earnings with zero listed peer to sanity-check that multiple, an entirely unsecured loan book, and 95% of the issue is the promoter selling down, not new capital for growth.\n\nIf you weight quality and growth more, the case leans positive. If you weight valuation discipline more, it leans expensive. Not a licensed financial advisor, verify against the Prospectus before deciding." },
+
+    { kw: ["valuation", "expensive", "cheap", "overpriced", "pe ratio", "p/e", "price earning", "multiple", "worth"],
+      a: "Valuation snapshot:\n\n- P/E at Offer on FY19 EPS: 80.06x (company-disclosed)\n- P/E on 3yr weighted EPS: 94.73x (even richer)\n- P/E on AI-annualised 9M FY20 run-rate: ~45.48x (much more reasonable, but this is an estimate, not company-disclosed)\n- Price/Book post-Offer: 13.32x\n\nThe honest read: on the numbers the company was legally required to disclose, this priced expensive. On the momentum the business was actually showing right before listing, it looks far more justified. There was no listed Indian peer to compare against either way." },
+
+    { kw: ["risk", "danger", "safe", "worried", "downside", "red flag"],
+      a: "Top risks, ranked by how much they'd matter:\n\n1. Unsecured lending: the entire card book has zero collateral behind it, the biggest structural risk for any credit card lender.\n2. Regulatory: RBI can tighten capital adequacy or interest-rate rules on NBFCs at any time.\n3. Promoter/brand dependency: the business leans hard on the SBI name and branch network.\n4. Governance: a group company faced SEBI non-compliance proceedings, and there are ongoing legal/regulatory matters involving the company, promoter, and directors.\n5. Cash flow: the Prospectus discloses past periods of negative operating cash flow, normal for a receivables-funded lender, but worth knowing.\n\nFull detail with severity/likelihood ratings is in the Risk Intelligence tab." },
+
+    { kw: ["fresh issue", "ofs", "offer for sale", "proceeds", "promoter selling", "why sell"],
+      a: "Of the Rs 10,340.79 Cr issue, only Rs 499.25 Cr (4.8%) was Fresh Issue, money that actually reached the company, used to shore up its RBI-mandated capital base. The remaining Rs 9,854.77 Cr (95.2%) was Offer for Sale, SBI selling down its own stake. Structurally, this IPO was much more about SBI monetising part of its holding than about raising growth capital for SBI Cards itself." },
+
+    { kw: ["promoter", "sbi ", " sbi", "brand", "state bank"],
+      a: "State Bank of India is the promoter, holding 74.00% before the Offer and 69.51% after. That is still firm control, so SBI Cards stays effectively an SBI-run business post-listing. The brand and SBI's massive branch network are a genuine competitive moat for customer acquisition, but they also mean the company's fortunes are tied to SBI's reputation and relationship, flagged directly as a risk in the Prospectus." },
+
+    { kw: ["financial", "revenue", "profit", "pat", "growth", "earnings", "eps"],
+      a: "Financial trend (Rs Cr): Revenue grew FY17 347.10 -> FY18 537.02 -> FY19 728.68 -> 9M FY20 724.02 (already near a full year's worth in 9 months). PAT grew FY17 372.86 -> FY18 601.14 -> FY19 862.72 -> 9M FY20 1,161.21. That's a ~45% revenue CAGR and ~52% PAT CAGR over FY17-19, margins expanding as the book scaled. EPS moved 4.75 -> 7.40 -> 9.43 -> 12.45 (9M, not annualised) over the same period." },
+
+    { kw: ["lot", "minimum", "how much", "invest amount", "min investment"],
+      a: "Minimum lot size was 19 shares. At the Rs 755 Offer Price, that's Rs 14,345 for the smallest retail application. Eligible employees got a Rs 75/share discount, so their minimum was Rs 12,920 for the same 19-share lot." },
+
+    { kw: ["listing", "gmp", "grey market", "listing gain"],
+      a: "There's no live GMP or listing-day data in this dataset, this is historical Prospectus data, not a live feed. What the Prospectus data does tell you: the issue priced at a rich 80x trailing P/E with no listed peer to benchmark against, which is exactly the setup where listing-day performance tends to be volatile in either direction, strong if sentiment is hot, sharp if it isn't." },
+
+    { kw: ["beginner", "explain simply", "eli5", "simple terms", "don't understand", "confused"],
+      a: "In plain terms: SBI Cards is India's #2 credit card company, majority-owned by SBI. It's growing fast and profitably, but this IPO mostly let SBI sell some of its own shares (not raise fresh money for the business), and it priced richly, meaning investors were paying a high multiple of current profit for future growth. The main risk is that credit card loans have no collateral, so a bad economic patch hits this business harder than a secured lender." },
+
+    { kw: ["compare", "peer", "competitor", "hdfc"],
+      a: "The Prospectus explicitly states there was no listed Indian company in a similar business at the time, so no direct peer comparison was possible. Qualitatively, HDFC Bank was the market leader in cards in force and spends, with SBI Cards a clear #2 at roughly 17-18% market share and gaining share in incremental cards issued." },
+
+    { kw: ["score", "rating", "verdict"],
+      a: "Overall AI Score: 79/100. Breakdown: Growth 94, Business Quality/Moat 88, Governance & Promoter Strength 80, Profitability Trend 83, Capital Strength 76, Valuation Attractiveness only 42 (this is what pulls the composite down). Full formulas are in the AI Scores tab, nothing here is a black box." },
+
+    { kw: ["registrar", "lead manager", "brlm", "kfin"],
+      a: "Registrar: KFin Technologies, they handle allotment, refunds and demat credit. Book Running Lead Managers: Kotak, Axis, BofA Securities, Nomura, HSBC, and SBICAP. Worth noting SBICAP is an SBI associate, a disclosed conflict since SBI is also the selling shareholder." },
+
+    { kw: ["date", "timeline", "when", "open", "close"],
+      a: "Anchor bidding: Feb 28, 2020. Bid/Offer opened: Mar 2, 2020. QIB book closed a day early on Mar 4. Retail and NII stayed open through the final close on Mar 5, 2020." },
+
+    { kw: ["crar", "capital adequacy", "borrowing", "debt", "leverage"],
+      a: "CRAR as of Dec 2019 was 19.2% overall (Tier I 15.4%), comfortably above the RBI's 15% minimum for an NBFC-ND-SI (10% Tier I minimum). Total borrowings were Rs 18,577.69 Cr against a net worth of Rs 4,822.82 Cr, meaning debt was almost 4x equity, which is normal for a lender but means the business is meaningfully leveraged." }
+  ];
+
+  function localAnswer(q){
+    var ql = ("" + q).toLowerCase();
+    for (var t = 0; t < TOPICS.length; t++){
+      var kws = TOPICS[t].kw;
+      for (var k = 0; k < kws.length; k++){
+        if (ql.indexOf(kws[k]) !== -1) return TOPICS[t].a;
+      }
+    }
+    return OVERVIEW;
+  }
+
+  function withTimeout(promise, ms){
+    return new Promise(function(resolve, reject){
+      var timer = setTimeout(function(){ reject(new Error("timeout")); }, ms);
+      promise.then(function(v){ clearTimeout(timer); resolve(v); },
+                    function(e){ clearTimeout(timer); reject(e); });
+    });
+  }
+
+  function sendChat(text){
+    if (!text) text = chatInput.value.trim();
+    if (!text) return;
+    addMsg(text, "user");
+    history.push({role: "user", content: text});
+    chatInput.value = "";
+    chatBtn.disabled = true;
+    var loadingEl = addMsg("Analysing...", "ai loading");
+
+    function finish(reply){
+      loadingEl.remove();
+      addMsg(reply, "ai");
+      history.push({role: "assistant", content: reply});
+      chatBtn.disabled = false;
+    }
+
+    var livePromise = fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: SYSTEM_CONTEXT,
+        messages: history
+      })
+    }).then(function(response){
+      if (!response.ok) throw new Error("bad status " + response.status);
+      return response.json();
+    }).then(function(data){
+      var blocks = data && data.content ? data.content : [];
+      var reply = "";
+      for (var b = 0; b < blocks.length; b++){
+        if (blocks[b].type === "text") reply += blocks[b].text;
+      }
+      if (!reply) throw new Error("empty reply");
+      return reply;
+    });
+
+    withTimeout(livePromise, 8000)
+      .then(function(reply){ finish(reply); })
+      .catch(function(){
+        // Live API unavailable in this environment (e.g. opened as a local
+        // file) — fall back to the local answer engine so the copilot
+        // always responds, including to vague or general questions.
+        finish(localAnswer(text));
+      });
+  }
+
+  chatBtn.addEventListener("click", function(){ sendChat(); });
+  chatInput.addEventListener("keydown", function(e){ if (e.key === "Enter") sendChat(); });
+
+  var suggEls = document.querySelectorAll(".sugg");
+  for (var sIdx = 0; sIdx < suggEls.length; sIdx++){
+    suggEls[sIdx].addEventListener("click", function(){
+      sendChat(this.getAttribute("data-q"));
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

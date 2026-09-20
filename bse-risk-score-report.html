@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSE Ltd (NSE: BSE) — Risk Score Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d10;
+    --bg-panel:#11151a;
+    --bg-panel-2:#161c23;
+    --bg-raised:#1b222a;
+    --border:#252d37;
+    --border-soft:#1c2229;
+    --text:#eef1f4;
+    --text-dim:#8b96a3;
+    --text-faint:#5c6673;
+    --gold:#d4a94a;
+    --gold-soft:rgba(212,169,74,.12);
+    --gold-dim:#8a7239;
+    --green:#3ecf8e;
+    --green-soft:rgba(62,207,142,.11);
+    --green-line:rgba(62,207,142,.35);
+    --red:#f0576b;
+    --red-soft:rgba(240,87,107,.11);
+    --red-line:rgba(240,87,107,.35);
+    --amber:#f5a623;
+    --amber-soft:rgba(245,166,35,.11);
+    --amber-line:rgba(245,166,35,.35);
+    --mono:'Brains Mono','JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    --sans:'DM Sans',-apple-system,'Segoe UI',sans-serif;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  body{
+    margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+
+  a{color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(212,169,74,.35);}
+  a:hover{color:#e8c876; border-bottom-color:#e8c876;}
+  .mono{font-family:var(--mono);}
+
+  /* ===== Ticker ribbon (signature element) ===== */
+  .ribbon{
+    background:#000; border-bottom:1px solid var(--border); overflow:hidden; white-space:nowrap;
+    padding:7px 0; position:sticky; top:0; z-index:50;
+  }
+  .ribbon-track{display:inline-block; padding-left:100%; animation:scroll-left 38s linear infinite;}
+  .ribbon:hover .ribbon-track{animation-play-state:paused;}
+  @keyframes scroll-left{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
+  .ribbon span{font-family:var(--mono); font-size:12px; color:var(--text-dim); margin-right:38px; letter-spacing:.02em;}
+  .ribbon b{color:var(--gold); font-weight:700;}
+  .ribbon .up{color:var(--green);} .ribbon .down{color:var(--red);}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  /* ===== Top stock bar ===== */
+  .stockbar{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px;
+    padding:26px 0 20px; border-bottom:1px solid var(--border);
+  }
+  .stockbar-left{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;}
+  .ticker-badge{
+    font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.08em; color:#0a0d10;
+    background:var(--gold); padding:4px 9px; border-radius:5px;
+  }
+  .company-name{font-size:26px; font-weight:700; letter-spacing:-.01em;}
+  .exch-tags{font-family:var(--mono); font-size:11.5px; color:var(--text-dim); display:flex; gap:8px;}
+  .exch-tags a{border:1px solid var(--border); border-radius:5px; padding:2px 7px; color:var(--text-dim);}
+  .exch-tags a:hover{color:var(--gold); border-color:var(--gold);}
+  .price-block{text-align:right;}
+  .price{font-family:var(--mono); font-size:34px; font-weight:700;}
+  .price-change{font-family:var(--mono); font-size:14.5px; font-weight:600;}
+  .price-change.down{color:var(--red);} .price-change.up{color:var(--green);}
+  .price-meta{font-size:11.5px; color:var(--text-faint); margin-top:3px;}
+
+  .export-btn{
+    font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.03em;
+    background:var(--bg-raised); color:var(--gold); border:1px solid var(--gold-dim); border-radius:7px;
+    padding:9px 15px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .15s;
+  }
+  .export-btn:hover{background:var(--gold-soft); border-color:var(--gold);}
+  .export-btn.copied{background:var(--green-soft); border-color:var(--green); color:var(--green);}
+
+  section{padding:34px 0; border-bottom:1px solid var(--border-soft);}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:8px;}
+  .section-title{font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); font-family:var(--mono);}
+  .section-title b{color:var(--gold);}
+  .section-sub{font-size:12.5px; color:var(--text-faint); max-width:520px; text-align:right;}
+
+  /* ===== Hero: gauge + KPI strip ===== */
+  .hero-grid{display:grid; grid-template-columns:300px 1fr; gap:30px;}
+  .gauge-card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .gauge-title{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); font-family:var(--mono); margin-bottom:8px;}
+  .gauge-score{font-family:var(--mono); font-size:44px; font-weight:800; margin-top:-64px;}
+  .gauge-label{font-size:13px; font-weight:700; margin-top:2px; letter-spacing:.02em;}
+  .gauge-zone{font-size:11.5px; color:var(--text-faint); margin-top:10px; text-align:center; line-height:1.5;}
+  .gauge-legend{display:flex; gap:14px; margin-top:14px; font-size:10.5px; color:var(--text-faint); font-family:var(--mono);}
+  .gauge-legend span{display:flex; align-items:center; gap:5px;}
+  .dot{width:7px; height:7px; border-radius:50%; display:inline-block;}
+
+  .kpi-strip{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;}
+  .kpi{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius); padding:15px 16px;
+  }
+  .kpi-label{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); margin-bottom:7px;}
+  .kpi-value{font-family:var(--mono); font-size:20px; font-weight:700; color:var(--text);}
+  .kpi-sub{font-size:11px; color:var(--text-faint); margin-top:4px;}
+  .kpi-sub a{font-size:11px;}
+
+  /* ===== Chart ===== */
+  .chart-card{background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px 20px 14px;}
+  .chart-legend{display:flex; gap:16px; font-size:11px; color:var(--text-faint); font-family:var(--mono); margin-bottom:6px; flex-wrap:wrap;}
+  .chart-note{font-size:11px; color:var(--text-faint); margin-top:10px; line-height:1.6;}
+
+  /* ===== 6-card grids ===== */
+  .card-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;}
+  .metric-card{
+    border-radius:var(--radius); padding:16px 17px; border:1px solid; position:relative;
+  }
+  .metric-card.beat{background:var(--green-soft); border-color:var(--green-line);}
+  .metric-card.miss{background:var(--red-soft); border-color:var(--red-line);}
+  .metric-card.caution{background:var(--amber-soft); border-color:var(--amber-line);}
+  .metric-tag{
+    font-family:var(--mono); font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    padding:2px 7px; border-radius:4px; display:inline-block; margin-bottom:9px;
+  }
+  .metric-card.beat .metric-tag{background:var(--green); color:#06251a;}
+  .metric-card.miss .metric-tag{background:var(--red); color:#2a0509;}
+  .metric-card.caution .metric-tag{background:var(--amber); color:#2b1a02;}
+  .metric-name{font-size:12.5px; color:var(--text-dim); margin-bottom:5px;}
+  .metric-val{font-family:var(--mono); font-size:20px; font-weight:700; margin-bottom:7px;}
+  .metric-card.beat .metric-val{color:var(--green);}
+  .metric-card.miss .metric-val{color:var(--red);}
+  .metric-card.caution .metric-val{color:var(--amber);}
+  .metric-just{font-size:11.5px; color:var(--text-dim); line-height:1.55;}
+  .metric-just a{font-size:11px;}
+
+  .subgrid-title{font-size:13px; font-weight:700; color:var(--text); margin:26px 0 12px; display:flex; align-items:center; gap:8px;}
+  .subgrid-title:first-child{margin-top:0;}
+  .subgrid-title .wt{font-family:var(--mono); font-size:11px; color:var(--gold); background:var(--gold-soft); padding:2px 8px; border-radius:20px; border:1px solid var(--gold-dim);}
+
+  /* ===== Score breakdown bars ===== */
+  .breakdown-row{display:grid; grid-template-columns:170px 1fr 60px; align-items:center; gap:16px; margin-bottom:16px;}
+  .breakdown-label{font-size:13px; font-weight:600;}
+  .breakdown-label small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--text-faint); font-weight:400; margin-top:2px;}
+  .bar-track{height:10px; background:var(--bg-raised); border-radius:20px; overflow:hidden; border:1px solid var(--border);}
+  .bar-fill{height:100%; border-radius:20px;}
+  .breakdown-val{font-family:var(--mono); font-size:14px; font-weight:700; text-align:right;}
+
+  /* ===== Tables ===== */
+  table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  th{
+    text-align:right; font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--text-faint); padding:9px 10px; border-bottom:1px solid var(--border); font-weight:600;
+  }
+  th:first-child, td:first-child{text-align:left;}
+  td{text-align:right; padding:9px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--mono); color:var(--text);}
+  td:first-child{font-family:var(--sans); color:var(--text-dim);}
+  tr:hover td{background:var(--bg-panel-2);}
+  .pos{color:var(--green);} .neg{color:var(--red);} .neu{color:var(--amber);}
+  .table-scroll{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-panel);}
+  .table-scroll table{min-width:760px;}
+  .table-foot{font-size:11px; color:var(--text-faint); margin-top:9px; line-height:1.6;}
+
+  /* ===== Dual column ===== */
+  .dual-col{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .col-card{border-radius:var(--radius); padding:20px; border:1px solid;}
+  .col-card.pro{background:var(--green-soft); border-color:var(--green-line);}
+  .col-card.con{background:var(--red-soft); border-color:var(--red-line);}
+  .col-head{font-family:var(--mono); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:7px;}
+  .col-card.pro .col-head{color:var(--green);} .col-card.con .col-head{color:var(--red);}
+  .col-item{margin-bottom:13px; font-size:13px; line-height:1.55;}
+  .col-item:last-child{margin-bottom:0;}
+  .col-item b{display:block; font-size:13px; margin-bottom:2px;}
+  .col-item span{color:var(--text-dim); font-size:12.3px;}
+  .col-item a{font-size:12px;}
+
+  /* ===== Deep-dive 6 card ===== */
+  .deep-card{background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius); padding:19px;}
+  .deep-num{font-family:var(--mono); font-size:10.5px; color:var(--gold); letter-spacing:.1em; margin-bottom:8px;}
+  .deep-title{font-size:14.5px; font-weight:700; margin-bottom:9px;}
+  .deep-body{font-size:12.6px; color:var(--text-dim); line-height:1.6;}
+  .deep-body a{font-size:12.2px;}
+  .deep-concept{
+    margin-top:11px; padding-top:11px; border-top:1px dashed var(--border); font-size:11.5px; color:var(--text-faint); line-height:1.55;
+  }
+  .deep-concept b{color:var(--gold-dim); font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;}
+
+  /* ===== Rating bar / verdict ===== */
+  .verdict-card{background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius); padding:26px;}
+  .verdict-top{display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; margin-bottom:20px;}
+  .verdict-title{font-size:20px; font-weight:800;}
+  .verdict-badge{font-family:var(--mono); font-size:12px; font-weight:800; padding:6px 14px; border-radius:20px; letter-spacing:.04em;}
+  .rating-track{position:relative; height:38px; border-radius:10px; overflow:hidden; display:flex; margin:14px 0 8px; border:1px solid var(--border);}
+  .rating-seg{flex:1; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10.5px; font-weight:700; color:rgba(255,255,255,.55); letter-spacing:.03em;}
+  .rating-marker{
+    position:absolute; top:-6px; width:3px; height:50px; background:var(--text); border-radius:2px;
+  }
+  .rating-marker::after{
+    content:attr(data-label); position:absolute; top:-24px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--text); white-space:nowrap;
+  }
+  .verdict-text{font-size:13.3px; color:var(--text-dim); line-height:1.7; margin-top:14px;}
+  .verdict-text b{color:var(--text);}
+
+  .analyst-row{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:20px;}
+  .analyst-chip{border:1px solid var(--border); border-radius:8px; padding:13px 14px; background:var(--bg-raised);}
+  .analyst-house{font-size:12px; font-weight:700; margin-bottom:4px;}
+  .analyst-call{font-family:var(--mono); font-size:11px; font-weight:800; padding:1px 8px; border-radius:12px; display:inline-block; margin-bottom:6px;}
+  .call-buy{background:var(--green-soft); color:var(--green); border:1px solid var(--green-line);}
+  .call-neutral{background:var(--amber-soft); color:var(--amber); border:1px solid var(--amber-line);}
+  .call-hold{background:var(--amber-soft); color:var(--amber); border:1px solid var(--amber-line);}
+  .analyst-tgt{font-family:var(--mono); font-size:13px; color:var(--text-dim);}
+
+  .disclaimer-box{
+    font-size:11px; color:var(--text-faint); line-height:1.7; background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px 20px; margin-top:6px;
+  }
+  .disclaimer-box b{color:var(--text-dim);}
+
+  footer{padding:30px 0 60px; text-align:center;}
+  .src-grid{display:flex; flex-wrap:wrap; gap:8px 14px; justify-content:center; margin:16px 0; font-size:11px;}
+  .src-grid a{border-bottom:none; color:var(--text-faint); background:var(--bg-panel); border:1px solid var(--border); padding:4px 10px; border-radius:20px; font-family:var(--mono);}
+  .src-grid a:hover{color:var(--gold); border-color:var(--gold-dim);}
+  .footer-note{font-size:11px; color:var(--text-faint); max-width:640px; margin:0 auto; line-height:1.7;}
+
+  .page-divider{
+    display:flex; align-items:center; gap:16px; padding:44px 0 10px; max-width:1180px; margin:0 auto; padding-left:28px; padding-right:28px;
+  }
+  .page-divider .line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--gold-dim), transparent);}
+  .page-divider .num{font-family:var(--mono); font-size:11px; color:var(--gold); letter-spacing:.15em; text-transform:uppercase;}
+
+  .bull-bear-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+  .bb-col{padding:0;}
+  .bb-head{font-family:var(--mono); font-weight:800; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; padding:12px 16px;}
+  .bb-head.bull{background:var(--green-soft); color:var(--green);}
+  .bb-head.bear{background:var(--red-soft); color:var(--red);}
+  .bb-col table{font-size:12.2px;}
+  .bb-col td:first-child{color:var(--text-dim); font-family:var(--sans);}
+
+  .shp-bars{display:flex; height:34px; border-radius:8px; overflow:hidden; border:1px solid var(--border); margin:16px 0 10px;}
+  .shp-seg{display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:#08101a;}
+  .shp-legend{display:flex; gap:18px; flex-wrap:wrap; font-size:11.5px; color:var(--text-dim); font-family:var(--mono);}
+  .shp-legend span{display:flex; align-items:center; gap:6px;}
+
+  @media (max-width: 880px){
+    .hero-grid{grid-template-columns:1fr;}
+    .kpi-strip, .card-grid, .analyst-row{grid-template-columns:repeat(2,1fr);}
+    .dual-col, .bull-bear-grid{grid-template-columns:1fr;}
+    .stockbar{flex-direction:column; align-items:flex-start;}
+    .price-block{text-align:left;}
+  }
+  @media (max-width: 560px){
+    .kpi-strip, .card-grid, .analyst-row{grid-template-columns:1fr;}
+    .breakdown-row{grid-template-columns:1fr; gap:6px;}
+    .breakdown-val{text-align:left;}
+  }
+  @media print{
+    .ribbon, .export-btn, .subnav, .btn-row{display:none;}
+    section{page-break-inside:avoid;}
+  }
+
+  /* ===== Sticky quick-jump nav ===== */
+  .subnav{
+    position:sticky; top:34px; z-index:40; background:rgba(10,13,16,.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--border); overflow-x:auto; white-space:nowrap; scrollbar-width:none;
+  }
+  .subnav::-webkit-scrollbar{display:none;}
+  .subnav-inner{display:flex; gap:4px; padding:9px 28px; max-width:1180px; margin:0 auto;}
+  .subnav a{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--text-faint); border:1px solid var(--border);
+    border-radius:20px; padding:5px 11px; white-space:nowrap; flex-shrink:0;
+  }
+  .subnav a:hover{color:var(--gold); border-color:var(--gold-dim);}
+  .subnav .pg{color:var(--gold); font-weight:700; padding-right:8px; border:none;}
+
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .pdf-btn{
+    font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.03em;
+    background:var(--bg-raised); color:var(--text-dim); border:1px solid var(--border); border-radius:7px;
+    padding:9px 15px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .15s;
+  }
+  .pdf-btn:hover{background:var(--bg-panel-2); border-color:var(--text-faint); color:var(--text);}
+
+  /* ===== Tooltip / glossary ===== */
+  .term{border-bottom:1px dotted var(--text-faint); cursor:help; position:relative;}
+  .term .tip{
+    visibility:hidden; opacity:0; position:absolute; bottom:135%; left:50%; transform:translateX(-50%);
+    background:#1e2731; border:1px solid var(--border); color:var(--text-dim); font-size:11px; font-family:var(--sans);
+    padding:9px 11px; border-radius:7px; width:220px; line-height:1.5; z-index:60; transition:opacity .15s; box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .term:hover .tip{visibility:visible; opacity:1;}
+  .term .tip::after{content:''; position:absolute; top:100%; left:50%; margin-left:-5px; border:5px solid transparent; border-top-color:#1e2731;}
+
+  /* ===== Donut / segment chart ===== */
+  .donut-wrap{display:flex; align-items:center; gap:30px; flex-wrap:wrap;}
+  .donut-legend{flex:1; min-width:200px;}
+  .donut-item{display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:12.5px;}
+  .donut-item:last-child{border-bottom:none;}
+  .donut-item-left{display:flex; align-items:center; gap:9px;}
+  .donut-val{font-family:var(--mono); font-weight:700;}
+
+  /* ===== Sensitivity table ===== */
+  .sens-cell{font-family:var(--mono); font-weight:700;}
+  .sens-base{background:var(--gold-soft) !important; color:var(--gold) !important;}
+
+  /* ===== Gov / ESG snapshot ===== */
+  .gov-row{display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid var(--border-soft); font-size:12.8px;}
+  .gov-row:last-child{border-bottom:none;}
+  .gov-row span:first-child{color:var(--text-dim);}
+  .gov-row span:last-child{font-family:var(--mono); font-weight:600;}
+
+  /* ===== Multi-line indexed chart legend ===== */
+  .idx-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:11px; font-family:var(--mono); margin-bottom:8px;}
+  .idx-legend span{display:flex; align-items:center; gap:6px;}
+  .idx-legend i{width:14px; height:2.5px; display:inline-block; border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="ribbon"><div class="ribbon-track" id="ribbonTrack"></div></div>
+
+<div class="wrap">
+  <div class="stockbar">
+    <div class="stockbar-left">
+      <span class="ticker-badge">NSE: BSE</span>
+      <span class="company-name">BSE Ltd</span>
+      <span class="exch-tags">
+        <a href="https://www.nseindia.com/get-quotes/equity?symbol=BSE" target="_blank" rel="noopener">NSE ↗</a>
+        <a href="https://www.bseindia.com" target="_blank" rel="noopener">BSE ↗</a>
+        <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener ↗</a>
+      </span>
+    </div>
+    <div style="display:flex; align-items:center; gap:20px;">
+      <div class="price-block">
+        <div class="price">₹3,695.90</div>
+        <div class="price-change down">▼ ₹106.80 (−2.81%) today</div>
+        <div class="price-meta">As of 8 Jul 2026, 2:51 PM IST · <a href="https://finance.yahoo.com/quote/BSE.NS/" target="_blank" rel="noopener">Yahoo Finance ↗</a></div>
+      </div>
+      <div class="btn-row">
+        <button class="export-btn" id="exportBtn" onclick="exportReport()">⧉ Copy report summary</button>
+        <button class="pdf-btn" onclick="window.print()">⬇ Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="subnav">
+    <div class="subnav-inner">
+      <span class="pg">P1</span>
+      <a href="#gauge">Risk Gauge</a>
+      <a href="#chart">Price Chart</a>
+      <a href="#technicals">Technicals</a>
+      <a href="#scorecard">Scorecard</a>
+      <a href="#breakdown">Score Breakdown</a>
+      <span class="pg" style="padding-left:14px;">P2</span>
+      <a href="#quarterly">Quarterly Trend</a>
+      <a href="#segment">Revenue Mix</a>
+      <a href="#dividend">Dividends</a>
+      <a href="#shareholding">Shareholding</a>
+      <a href="#insider">Insider/SAST</a>
+      <a href="#deepdive">Deep Dive</a>
+      <a href="#relval">Valuation Comps</a>
+      <a href="#global">Global Comps</a>
+      <a href="#risk">Risk Assessment</a>
+      <a href="#sensitivity">Sensitivity</a>
+      <a href="#gov">Governance</a>
+      <a href="#bullbear">Bull/Bear</a>
+      <a href="#verdict">Verdict</a>
+      <a href="#glossary">Glossary</a>
+    </div>
+  </div>
+
+  <!-- ============ HERO: GAUGE + KPI ============ -->
+  <section id="gauge">
+    <div class="section-head">
+      <div class="section-title">Page 1 · <b>Composite Risk Score</b></div>
+      <div class="section-sub">Weighted 35% Valuation / 35% Financial Health / 30% Growth — see breakdown below</div>
+    </div>
+    <div class="hero-grid">
+      <div class="gauge-card">
+        <div class="gauge-title">Risk Score (0–100)</div>
+        <svg width="230" height="140" viewBox="0 0 230 140">
+          <path d="M 20 120 A 95 95 0 0 1 210 120" fill="none" stroke="#1b222a" stroke-width="18" stroke-linecap="round"/>
+          <path d="M 20 120 A 95 95 0 0 1 78 33" fill="none" stroke="var(--green)" stroke-width="18" stroke-linecap="round"/>
+          <path d="M 78 33 A 95 95 0 0 1 152 33" fill="none" stroke="var(--amber)" stroke-width="18" stroke-linecap="round"/>
+          <path d="M 152 33 A 95 95 0 0 1 210 120" fill="none" stroke="var(--red)" stroke-width="18" stroke-linecap="round"/>
+          <line x1="115" y1="120" x2="151" y2="52" stroke="#eef1f4" stroke-width="3.5" stroke-linecap="round" transform="rotate(0 115 120)"/>
+          <circle cx="115" cy="120" r="7" fill="#eef1f4"/>
+        </svg>
+        <div class="gauge-score">51<span style="font-size:18px;color:var(--text-faint);">/100</span></div>
+        <div class="gauge-label" style="color:var(--amber);">MODERATE RISK</div>
+        <div class="gauge-zone">Rich valuation (63.5× P/E) offset by a debt-free balance sheet and market-share gains, tempered by SEBI/RBI derivatives-regulation overhang.</div>
+        <div class="gauge-legend">
+          <span><i class="dot" style="background:var(--green);"></i>0–33 Low</span>
+          <span><i class="dot" style="background:var(--amber);"></i>34–66 Moderate</span>
+          <span><i class="dot" style="background:var(--red);"></i>67–100 High</span>
+        </div>
+      </div>
+
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-label">Market Cap</div>
+          <div class="kpi-value">₹1,50,025 Cr</div>
+          <div class="kpi-sub">+48.7% in 1Y · <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Stock <span class="term">P/E (TTM)<span class="tip">Price-to-Earnings: share price ÷ trailing 12-month earnings per share. Higher = market is paying more per rupee of current profit.</span></span></div>
+          <div class="kpi-value">63.5×</div>
+          <div class="kpi-sub">vs. 5Y median ≈45× · <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape ↗</a></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="term">P/B Ratio<span class="tip">Price-to-Book: share price ÷ book value per share (net assets). Above 1× means the market values the company above its accounting net worth.</span></span></div>
+          <div class="kpi-value">23.6×</div>
+          <div class="kpi-sub">Book value ₹164/sh · <a href="https://www.valueresearchonline.com/stocks/97436/bse-ltd/" target="_blank" rel="noopener">Value Research ↗</a></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="term">ROE / ROCE<span class="tip">Return on Equity / Return on Capital Employed: profit generated per rupee of shareholder equity or total capital deployed. Higher generally means a more efficient, capital-light business.</span></span></div>
+          <div class="kpi-value">44.8% / 58.0%</div>
+          <div class="kpi-sub">FY26, consolidated · <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">52-Week Range</div>
+          <div class="kpi-value">₹2,022 – 4,447</div>
+          <div class="kpi-sub">CMP is 82.9% off the low · <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape ↗</a></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Dividend Yield</div>
+          <div class="kpi-value">0.26%</div>
+          <div class="kpi-sub">₹10/sh final FY26 · <a href="https://www.bajajbroking.in/share-market-news/bse-q4fy26-results-profit-jumps-33-percent-qoq-rs-10-dividend-recommended" target="_blank" rel="noopener">Bajaj Broking ↗</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHART ============ -->
+  <section id="chart">
+    <div class="section-head">
+      <div class="section-title">12-Month <b>Price Trend</b> · Annotated</div>
+      <div class="section-sub">Indicative monthly close, reconstructed from public price disclosures (Jul '25 – Jul '26)</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-legend">
+        <span style="color:var(--gold);">— Price</span>
+        <span style="color:var(--text-faint);">┄ 52W High ₹4,446.80</span>
+        <span style="color:var(--text-faint);">┄ 52W Low ₹2,021.50</span>
+      </div>
+      <svg viewBox="0 0 1000 300" width="100%" height="300" style="overflow:visible;">
+        <line x1="30" y1="40" x2="970" y2="40" stroke="#2a3340" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="975" y="44" font-family="var(--mono)" font-size="9.5" fill="#5c6673">4,447</text>
+        <line x1="30" y1="240" x2="970" y2="240" stroke="#2a3340" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="975" y="244" font-family="var(--mono)" font-size="9.5" fill="#5c6673">2,022</text>
+
+        <polyline fill="none" stroke="#d4a94a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+          points="40,205 117,192 193,180 270,168 347,155 423,139 500,125 577,135 653,85 730,50 807,79 883,87 960,102"/>
+        <polygon fill="url(#priceGrad)" opacity="0.18"
+          points="40,205 117,192 193,180 270,168 347,155 423,139 500,125 577,135 653,85 730,50 807,79 883,87 960,102 960,270 40,270"/>
+        <defs>
+          <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d4a94a"/>
+            <stop offset="100%" stop-color="#d4a94a" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- markers -->
+        <g>
+          <circle cx="40" cy="205" r="4.5" fill="#f0576b"/>
+          <line x1="40" y1="205" x2="40" y2="262" stroke="#3a434f" stroke-width="1"/>
+          <text x="40" y="278" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">Jul'25</text>
+          <text x="40" y="197" font-family="var(--mono)" font-size="9.5" fill="#f0576b" text-anchor="middle">SEBI–Jane St. fallout</text>
+        </g>
+        <g>
+          <circle cx="500" cy="125" r="4.5" fill="#d4a94a"/>
+          <text x="500" y="292" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">Jan'26</text>
+        </g>
+        <g>
+          <circle cx="653" cy="85" r="4.5" fill="#3ecf8e"/>
+          <text x="653" y="292" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">Mar'26</text>
+        </g>
+        <g>
+          <circle cx="730" cy="50" r="5" fill="#3ecf8e"/>
+          <text x="730" y="278" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">Apr'26</text>
+          <text x="730" y="34" font-family="var(--mono)" font-size="9.5" fill="#3ecf8e" text-anchor="middle">52W high · IT-index nod</text>
+        </g>
+        <g>
+          <circle cx="807" cy="79" r="4.5" fill="#3ecf8e"/>
+          <text x="807" y="292" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">May'26</text>
+          <text x="807" y="63" font-family="var(--mono)" font-size="9.5" fill="#3ecf8e" text-anchor="middle">Q4 FY26: PAT +61%</text>
+        </g>
+        <g>
+          <circle cx="960" cy="102" r="5.5" fill="#f5a623"/>
+          <text x="920" y="292" font-family="var(--mono)" font-size="10" fill="#8b96a3" text-anchor="middle">Jul'26</text>
+          <text x="875" y="120" font-family="var(--mono)" font-size="9.5" fill="#f5a623" text-anchor="middle">RBI norms correction</text>
+        </g>
+      </svg>
+      <div class="chart-note">Chart reconstructs the broad monthly trend from time-stamped price snapshots across Tickertape, Screener.in and news coverage cited throughout this report; it is directional, not a tick-accurate feed. For live intraday charts see <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape</a> or <a href="https://www.nseindia.com/get-quotes/equity?symbol=BSE" target="_blank" rel="noopener">NSE India</a>.</div>
+    </div>
+  </section>
+
+  <!-- ============ TECHNICAL ANALYSIS STRIP ============ -->
+  <section id="technicals">
+    <div class="section-head">
+      <div class="section-title">Technical <b>Analysis Strip</b></div>
+      <div class="section-sub">Indicative levels interpolated from the price trend above — verify live indicators before trading</div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-label"><span class="term">RSI (14D)<span class="tip">Relative Strength Index: momentum oscillator, 0–100. Above 70 = overbought, below 30 = oversold, 30–70 = neutral.</span></span></div>
+        <div class="kpi-value" style="color:var(--amber);">~40</div>
+        <div class="kpi-sub">Neutral-to-oversold, post-correction</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">20-Day SMA</div>
+        <div class="kpi-value">₹3,830</div>
+        <div class="kpi-sub" style="color:var(--red);">CMP is below — short-term bearish</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">50-Day SMA</div>
+        <div class="kpi-value">₹3,950</div>
+        <div class="kpi-sub" style="color:var(--red);">CMP is below — medium-term bearish</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">200-Day SMA</div>
+        <div class="kpi-value">₹3,150</div>
+        <div class="kpi-sub" style="color:var(--green);">CMP is above — long-term uptrend intact</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Nearest Support</div>
+        <div class="kpi-value">₹3,620 / ₹3,400</div>
+        <div class="kpi-sub">Jefferies technical zone / 52W-low base</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Nearest Resistance</div>
+        <div class="kpi-value">₹3,880 / ₹4,250</div>
+        <div class="kpi-sub">Recent breakdown level / 1Y target est.</div>
+      </div>
+    </div>
+    <div class="table-foot">A short-term "death-cross-adjacent" setup (price below 20D and 50D SMA) sits inside a still-intact long-term uptrend (price above 200D SMA) — consistent with a healthy pullback rather than a trend reversal, but worth monitoring if ₹3,400 breaks. Live indicators: <a href="https://trendlyne.com/equity/technical-analysis/BSE/52884/bse-ltd/" target="_blank" rel="noopener">Trendlyne Technicals ↗</a> · <a href="https://groww.in/stocks/bse-ltd/technicals" target="_blank" rel="noopener">Groww Technicals ↗</a> · <a href="https://www.investing.com/equities/bse-ltd-technical" target="_blank" rel="noopener">Investing.com ↗</a></div>
+  </section>
+
+  <!-- ============ VALUATION 6-CARD ============ -->
+  <section id="scorecard">
+    <div class="section-head">
+      <div class="section-title"><b>Scorecard</b> · Beats → Misses → Cautions</div>
+      <div class="section-sub">Cards are grouped by verdict colour (green, then red, then amber) across all three factors, per your formatting request — not by metric type</div>
+    </div>
+
+    <div class="subgrid-title">Valuation <span class="wt">35% weight</span></div>
+    <div class="card-grid">
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Growth-Adjusted P/E (PEG-style)</div>
+        <div class="metric-val">0.80×</div>
+        <div class="metric-just">63.5× trailing P/E against 79% TTM profit CAGR is a reasonable trade-off for the growth on offer — below 1.0× is generally read as "growth not fully priced in." <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card miss">
+        <span class="metric-tag">Miss</span>
+        <div class="metric-name">P/E (TTM)</div>
+        <div class="metric-val">63.5×</div>
+        <div class="metric-just">Well above the stock's own 5-year median (~45×) and India's capital-markets sector average; priced for continued 30%+ EPS growth with little room for a miss. <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape ↗</a></div>
+      </div>
+      <div class="metric-card miss">
+        <span class="metric-tag">Miss</span>
+        <div class="metric-name">P/B Ratio</div>
+        <div class="metric-val">23.6×</div>
+        <div class="metric-just">Screener flags this explicitly as the single biggest "Con" on the stock — an asset-light exchange model justifies some premium, but 23–24× book is rich even by that standard. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card miss">
+        <span class="metric-tag">Miss</span>
+        <div class="metric-name">EV/EBITDA (est.)</div>
+        <div class="metric-val">~45×</div>
+        <div class="metric-val" style="display:none;"></div>
+        <div class="metric-just">Estimated from FY26 operating profit + depreciation (₹3,238 Cr) against net-of-cash enterprise value — a large premium to global cash/derivatives exchanges, which typically trade 20–30×. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card caution">
+        <span class="metric-tag">Caution</span>
+        <div class="metric-name">Dividend Yield</div>
+        <div class="metric-val">0.26%</div>
+        <div class="metric-just">FY26 payout ratio fell to just 16% (from 22–26% historically) as BSE reinvests in tech and derivatives-basket expansion — not a yield story for income investors. <a href="https://www.bajajbroking.in/share-market-news/bse-q4fy26-results-profit-jumps-33-percent-qoq-rs-10-dividend-recommended" target="_blank" rel="noopener">Bajaj Broking ↗</a></div>
+      </div>
+      <div class="metric-card caution">
+        <span class="metric-tag">Caution</span>
+        <div class="metric-name">Market Cap / Sales</div>
+        <div class="metric-val">~31×</div>
+        <div class="metric-just">₹1,50,025 Cr cap against ₹4,834 Cr FY26 revenue. High but directionally similar to MCX (~30×) — the market is paying up across the whole exchange cohort, not just BSE in isolation. <a href="https://www.screener.in/company/MCX/consolidated/" target="_blank" rel="noopener">Screener.in (MCX) ↗</a></div>
+      </div>
+    </div>
+
+    <div class="subgrid-title">Financial Health <span class="wt">35% weight</span></div>
+    <div class="card-grid">
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Balance-Sheet Leverage</div>
+        <div class="metric-val">Zero Debt</div>
+        <div class="metric-just">Borrowings have stood at ₹0 Cr on the consolidated balance sheet since FY22 — Screener explicitly tags BSE "almost debt-free." <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Return on Equity</div>
+        <div class="metric-val">44.8%</div>
+        <div class="metric-just">Last-year ROE of 44.8% vs. a 3-year average of 35.5% and a 10-year average of just 20% — profitability has structurally re-rated, not just spiked for one quarter. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Free Cash Flow (FY26)</div>
+        <div class="metric-val">₹2,589 Cr</div>
+        <div class="metric-just">Operating cash flow of ₹3,104 Cr converted to ₹2,589 Cr FCF — CFO/Operating-Profit ratio of 122% shows earnings are genuinely turning into cash, not just accounting profit. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Return on Capital Employed</div>
+        <div class="metric-val">58.0%</div>
+        <div class="metric-just">ROCE has climbed from 12% (FY23) to 23% (FY24) to 47% (FY25) to 58% (FY26) — a rare multi-year step-change rather than a one-off. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card caution">
+        <span class="metric-tag">Caution</span>
+        <div class="metric-name">Debtor Days</div>
+        <div class="metric-val">42 days</div>
+        <div class="metric-just">Up from 35 days a year earlier, and receivables roughly doubled in FY26 per independent results analysis — worth watching as trading volumes plateau. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card caution">
+        <span class="metric-tag">Caution</span>
+        <div class="metric-name">Other-Income Volatility</div>
+        <div class="metric-val">₹392 Cr FY26</div>
+        <div class="metric-just">Up from just ₹22 Cr in FY25 (and a one-off ₹430 Cr spike in Jun'23); non-recurring treasury/investment gains have periodically flattered reported PAT growth — strip these out when comparing YoY. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+    </div>
+
+    <div class="subgrid-title">Growth <span class="wt">30% weight</span></div>
+    <div class="card-grid">
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Revenue Growth (FY26)</div>
+        <div class="metric-val">+63.5% YoY</div>
+        <div class="metric-just">Consolidated revenue rose to ₹4,834 Cr from ₹3,212 Cr, the third consecutive year of 50%+ growth. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Net Profit Growth (FY26)</div>
+        <div class="metric-val">+88.3% YoY</div>
+        <div class="metric-just">PAT scaled to ₹2,487 Cr from ₹1,322 Cr, driven by operating leverage — OPM expanded to 64% from 58%. <a href="https://www.bajajbroking.in/share-market-news/bse-q4fy26-results-profit-jumps-33-percent-qoq-rs-10-dividend-recommended" target="_blank" rel="noopener">Bajaj Broking ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">3-Year Profit CAGR</div>
+        <div class="metric-val">124%</div>
+        <div class="metric-just">Compounded over three years versus 68% over five and 32% over ten — growth has clearly accelerated, not decayed. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+      </div>
+      <div class="metric-card beat">
+        <span class="metric-tag">Beat</span>
+        <div class="metric-name">Options Premium Market Share</div>
+        <div class="metric-val">26.8% → rising</div>
+        <div class="metric-just">Up from 24.4% in Q2 FY26; Nuvama models 31%/35% for FY27E/28E as BSE's derivatives basket (now 5 indices) closes the gap with NSE. <a href="https://www.businesstoday.in/markets/stocks/story/bse-shares-hit-record-high-post-q4-earnings-buy-sell-or-hold-530522-2026-05-08" target="_blank" rel="noopener">BusinessToday ↗</a></div>
+      </div>
+      <div class="metric-card miss">
+        <span class="metric-tag">Miss</span>
+        <div class="metric-name">RBI Capital-Exposure Norms</div>
+        <div class="metric-val">Effective 1 Jul 2026</div>
+        <div class="metric-just">Revised RBI norms on bank-funded proprietary trading took effect on 1 July 2026, sending BSE and MCX shares lower for four straight sessions into this report's pricing date. <a href="https://www.multibagg.ai/market-pulse/articles/bse-mcx-shares-rbi-norms-cmrai4yorli6zoi0io84jp1no" target="_blank" rel="noopener">Multibagg AI ↗</a></div>
+      </div>
+      <div class="metric-card caution">
+        <span class="metric-tag">Caution</span>
+        <div class="metric-name">Regulatory &amp; Competitive Overhang</div>
+        <div class="metric-val">SEBI + NSE IPO</div>
+        <div class="metric-just">SEBI has floated (not yet finalised) longer derivative-contract tenures that could curb weekly-options churn, while NSE's anticipated IPO sharpens two-exchange competitive dynamics. <a href="https://unlistedzone.com/nse-ipo-2026-price-valuation-financials-how-it-compares-with-bse" target="_blank" rel="noopener">Unlisted Zone ↗</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCORE BREAKDOWN ============ -->
+  <section id="breakdown">
+    <div class="section-head">
+      <div class="section-title">Risk Score <b>Breakdown</b></div>
+      <div class="section-sub">Sub-score = risk contribution 0–100 (higher = riskier); weighted sum = composite score of 51</div>
+    </div>
+    <div class="breakdown-row">
+      <div class="breakdown-label">Valuation<small>35% weight</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:78%; background:var(--red);"></div></div>
+      <div class="breakdown-val" style="color:var(--red);">78/100</div>
+    </div>
+    <div class="breakdown-row">
+      <div class="breakdown-label">Financial Health<small>35% weight</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:22%; background:var(--green);"></div></div>
+      <div class="breakdown-val" style="color:var(--green);">22/100</div>
+    </div>
+    <div class="breakdown-row">
+      <div class="breakdown-label">Growth<small>30% weight</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:52%; background:var(--amber);"></div></div>
+      <div class="breakdown-val" style="color:var(--amber);">52/100</div>
+    </div>
+    <div class="table-foot">Composite = (0.35 × 78) + (0.35 × 22) + (0.30 × 52) = <b style="color:var(--text);">51/100</b>. Valuation risk is high because BSE trades far above its own history; Financial Health risk is low given zero debt and 58% ROCE; Growth risk sits mid-way because strong execution is offset by live regulatory changes (RBI, SEBI) that directly hit the derivatives revenue line.</div>
+  </section>
+</div>
+
+<!-- ================= PAGE 2 ================= -->
+<div class="page-divider"><div class="line"></div><div class="num">Page 2 · Deep Dive &amp; Verdict</div><div class="line"></div></div>
+
+<div class="wrap">
+
+  <!-- ============ RETURNS TABLE ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">Price <b>Performance</b> Across Timeframes</div>
+      <div class="section-sub">Point-to-point / CAGR returns as disclosed by source platforms on their respective pull dates</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Period</th><th>1M</th><th>3M</th><th>6M</th><th>1Y</th><th>3Y</th><th>5Y</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>BSE Ltd Return</td>
+            <td class="neg">▼ correction<br><span style="font-size:10px;color:var(--text-faint);">post RBI norms</span></td>
+            <td class="pos">+10–15%*</td>
+            <td class="pos">+45.9%<span style="font-size:10px;color:var(--text-faint);"> (as of 5 Jun)</span></td>
+            <td class="pos">+38.0%<span style="font-size:10px;color:var(--text-faint);"> (CAGR)</span></td>
+            <td class="pos">+168%<span style="font-size:10px;color:var(--text-faint);"> (CAGR)</span></td>
+            <td class="pos">+107%<span style="font-size:10px;color:var(--text-faint);"> (CAGR)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">1Y/3Y/5Y are Screener.in's published stock-price CAGR figures (25 Jun 2026 pull). 6M is Share.Market's point return as of 5 Jun 2026. 1M/3M are directional estimates from the price path above (*not sourced to a single live tick) — for exact live figures use <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape</a> or <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in</a>.</div>
+  </section>
+
+  <!-- ============ QUARTERLY TREND ============ -->
+  <section id="quarterly">
+    <div class="section-head">
+      <div class="section-title">Quarterly Financial <b>Trend</b> (India Operations)</div>
+      <div class="section-sub">Consolidated results, ₹ Crore — &gt;95% of BSE's revenue is domestic; standalone view linked below</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Quarter</th><th>Revenue</th><th>OPM %</th><th>Net Profit</th><th>EPS (₹)</th><th>YoY Profit</th></tr></thead>
+        <tbody>
+          <tr><td>Q1 FY25 (Jun'24)</td><td>602</td><td>47%</td><td>264</td><td>6.53</td><td class="pos">+192%</td></tr>
+          <tr><td>Q2 FY25 (Sep'24)</td><td>813</td><td>56%</td><td>346</td><td>8.54</td><td class="pos">+193%</td></tr>
+          <tr><td>Q3 FY25 (Dec'24)</td><td>768</td><td>31%</td><td>219</td><td>5.41</td><td class="pos">+107%</td></tr>
+          <tr><td>Q4 FY25 (Mar'25)</td><td>847</td><td>57%</td><td>494</td><td>12.17</td><td class="pos">+362%</td></tr>
+          <tr><td>Q1 FY26 (Jun'25)</td><td>958</td><td>65%</td><td>538</td><td>13.28</td><td class="pos">+104%</td></tr>
+          <tr><td>Q2 FY26 (Sep'25)</td><td>1,068</td><td>64%</td><td>557</td><td>13.73</td><td class="pos">+61%</td></tr>
+          <tr><td>Q3 FY26 (Dec'25)</td><td>1,244</td><td>59%</td><td>597</td><td>14.78</td><td class="pos">+173%</td></tr>
+          <tr><td>Q4 FY26 (Mar'26)</td><td>1,564</td><td>67%</td><td>795</td><td>19.58</td><td class="pos">+61%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">Source: <a href="https://www.screener.in/company/BSE/consolidated/#quarters" target="_blank" rel="noopener">Screener.in quarterly results ↗</a> · Standalone (India-only) figures track consolidated closely and are viewable at the <a href="https://www.screener.in/company/BSE/#quarters" target="_blank" rel="noopener">standalone toggle ↗</a>.</div>
+  </section>
+
+  <!-- ============ ANNUAL BLOCK ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">FY26 <b>Annual Snapshot</b></div>
+      <div class="section-sub">Full year ended 31 March 2026, consolidated</div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi"><div class="kpi-label">Revenue</div><div class="kpi-value">₹4,834 Cr</div><div class="kpi-sub">+63.5% YoY</div></div>
+      <div class="kpi"><div class="kpi-label">Net Profit</div><div class="kpi-value">₹2,487 Cr</div><div class="kpi-sub">+88.3% YoY</div></div>
+      <div class="kpi"><div class="kpi-label">EPS</div><div class="kpi-value">₹61.31</div><div class="kpi-sub">vs ₹32.65 FY25</div></div>
+      <div class="kpi"><div class="kpi-label">Operating Margin</div><div class="kpi-value">63.7%</div><div class="kpi-sub">vs 58.4% FY25</div></div>
+      <div class="kpi"><div class="kpi-label">Free Cash Flow</div><div class="kpi-value">₹2,589 Cr</div><div class="kpi-sub">122% CFO/OP conversion</div></div>
+      <div class="kpi"><div class="kpi-label">Final Dividend</div><div class="kpi-value">₹10/share</div><div class="kpi-sub">Record date 10 Jul 2026</div></div>
+    </div>
+  </section>
+
+  <!-- ============ SEGMENT REVENUE MIX ============ -->
+  <section id="segment">
+    <div class="section-head">
+      <div class="section-title">Revenue <b>Mix by Segment</b></div>
+      <div class="section-sub">FY26 consolidated revenue, ₹4,834 Cr — approximate split reconstructed from disclosed segment commentary</div>
+    </div>
+    <div class="donut-wrap">
+      <svg width="200" height="200" viewBox="0 0 42 42" style="flex-shrink:0;">
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#1b222a" stroke-width="6"></circle>
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#d4a94a" stroke-width="6"
+          stroke-dasharray="61 39" stroke-dashoffset="25" transform="rotate(-90 21 21)"></circle>
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#3ecf8e" stroke-width="6"
+          stroke-dasharray="14 86" stroke-dashoffset="-36" transform="rotate(-90 21 21)"></circle>
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f5a623" stroke-width="6"
+          stroke-dasharray="9 91" stroke-dashoffset="-50" transform="rotate(-90 21 21)"></circle>
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f0576b" stroke-width="6"
+          stroke-dasharray="6 94" stroke-dashoffset="-59" transform="rotate(-90 21 21)"></circle>
+        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#5c6673" stroke-width="6"
+          stroke-dasharray="10 90" stroke-dashoffset="-65" transform="rotate(-90 21 21)"></circle>
+        <text x="21" y="20" text-anchor="middle" font-family="var(--mono)" font-size="5.5" fill="#eef1f4" font-weight="700">₹4,834</text>
+        <text x="21" y="25.5" text-anchor="middle" font-family="var(--mono)" font-size="3" fill="#8b96a3">CR FY26</text>
+      </svg>
+      <div class="donut-legend">
+        <div class="donut-item"><div class="donut-item-left"><i class="dot" style="background:#d4a94a;"></i>Transaction charges (equity + derivatives)</div><span class="donut-val" style="color:#d4a94a;">~61%</span></div>
+        <div class="donut-item"><div class="donut-item-left"><i class="dot" style="background:#3ecf8e;"></i>Data &amp; index licensing services</div><span class="donut-val" style="color:#3ecf8e;">~14%</span></div>
+        <div class="donut-item"><div class="donut-item-left"><i class="dot" style="background:#f5a623;"></i>Listing &amp; SME/capital-raising fees</div><span class="donut-val" style="color:#f5a623;">~9%</span></div>
+        <div class="donut-item"><div class="donut-item-left"><i class="dot" style="background:#f0576b;"></i>BSE StAR MF (mutual fund platform)</div><span class="donut-val" style="color:#f0576b;">~6%</span></div>
+        <div class="donut-item"><div class="donut-item-left"><i class="dot" style="background:#5c6673;"></i>Clearing, IT, investor &amp; other services</div><span class="donut-val" style="color:#5c6673;">~10%</span></div>
+      </div>
+    </div>
+    <div class="table-foot">Exact segment-wise revenue isn't broken out in headline results; this split is reconstructed directionally from investor-presentation commentary (transaction-charge dominance, StAR MF's disclosed ₹285.2 Cr) and should be read as approximate. Full segment notes: <a href="https://nsearchives.nseindia.com/corporate/BSE1_07052026174401_NSEintimation.pdf" target="_blank" rel="noopener">Q4 FY26 Investor Presentation ↗</a></div>
+  </section>
+
+  <!-- ============ DIVIDEND HISTORY ============ -->
+  <section id="dividend">
+    <div class="section-head">
+      <div class="section-title">Dividend <b>Payout History</b></div>
+      <div class="section-sub">Payout ratio (% of net profit distributed) — FY20 through FY26</div>
+    </div>
+    <div style="display:flex; align-items:flex-end; gap:14px; height:150px; padding:10px 6px 0; border-bottom:1px solid var(--border);">
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--text-dim);">63%</div>
+        <div style="width:100%; height:98px; background:linear-gradient(180deg,#8a7239,#d4a94a); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY20</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--text-dim);">65%</div>
+        <div style="width:100%; height:101px; background:linear-gradient(180deg,#8a7239,#d4a94a); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY21</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--text-dim);">72%</div>
+        <div style="width:100%; height:112px; background:linear-gradient(180deg,#8a7239,#d4a94a); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY22</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--text-dim);">74%</div>
+        <div style="width:100%; height:115px; background:linear-gradient(180deg,#8a7239,#d4a94a); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY23</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--amber);">26%</div>
+        <div style="width:100%; height:40px; background:linear-gradient(180deg,#a06e15,#f5a623); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY24</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--amber);">23%</div>
+        <div style="width:100%; height:35px; background:linear-gradient(180deg,#a06e15,#f5a623); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY25</div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="mono" style="font-size:11px; color:var(--red);">16%</div>
+        <div style="width:100%; height:25px; background:linear-gradient(180deg,#8a2530,#f0576b); border-radius:4px 4px 0 0;"></div>
+        <div class="mono" style="font-size:10px; color:var(--text-faint);">FY26</div>
+      </div>
+    </div>
+    <div class="table-foot">Payout ratio has fallen from ~74% (FY23) to just 16% (FY26) even as absolute profit has surged — BSE is retaining more earnings to fund its derivatives-basket expansion and technology capex rather than distributing them. FY26's ₹10/share final dividend is the lowest per-share payout since 2018 in percentage terms. Source: <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a> · <a href="https://trendlyne.com/equity/Dividend/BSE/52884/bse-ltd-dividend/" target="_blank" rel="noopener">Trendlyne Dividend History ↗</a></div>
+  </section>
+
+
+  <!-- ============ EARNINGS + DELIVERY ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">Latest Earnings &amp; <b>Delivery Update</b></div>
+      <div class="section-sub">Q4 FY26 results (declared 7 May 2026) and recent trading-volume behaviour</div>
+    </div>
+    <div class="dual-col">
+      <div class="col-card pro">
+        <div class="col-head">✓ Earnings Highlights</div>
+        <div class="col-item"><b>Revenue ₹1,563.5 Cr</b><span>up 84.7% YoY, driven by a surge in equity-derivatives turnover; average daily notional derivatives turnover hit ₹245 lakh crore in Q4, up from ₹210 lakh crore in Q3.</span></div>
+        <div class="col-item"><b>Net Profit ₹795.5 Cr</b><span>up 61.3% YoY and 33% QoQ — the strongest single quarter in the company's history.</span></div>
+        <div class="col-item"><b>BSE StAR MF platform</b><span>FY26 revenue up 24% to ₹285.2 Cr on 84.1 Cr transactions (+27% YoY), diversifying revenue beyond equity derivatives.</span> <a href="https://blog.liquide.life/bse-q4-results-2026-dividend-share-price-target/" target="_blank" rel="noopener">Liquide ↗</a></div>
+      </div>
+      <div class="col-card con">
+        <div class="col-head">◐ Volume &amp; Delivery Behaviour</div>
+        <div class="col-item"><b>Today's volume: 50.2 lakh shares</b><span>~22% above the 20-day average of 41.1 lakh shares, alongside a 2.81% intraday decline — consistent with continued institutional de-risking after the RBI capital-norms change.</span></div>
+        <div class="col-item"><b>Post-results volatility</b><span>Stock opened down at ₹3,963.6 immediately after the Q4 beat before recovering on brokerage upgrades — a reminder that even strong prints get sold into at this valuation.</span></div>
+        <div class="col-item"><b>Live delivery %</b><span>Daily delivered-quantity data updates continuously; check the current reading rather than relying on a static snapshot.</span> <a href="https://trendlyne.com/equity/delivery-analysis/52884/BSE/bse-ltd/" target="_blank" rel="noopener">Trendlyne Delivery ↗</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEALS / SHAREHOLDING / MF / >1% ============ -->
+  <section id="shareholding">
+    <div class="section-head">
+      <div class="section-title">Deals, <b>Shareholding &amp; Institutional Activity</b></div>
+      <div class="section-sub">Bulk/block deals, promoter-free shareholding pattern, mutual-fund holding trend, &gt;1% shareholders</div>
+    </div>
+
+    <div class="subgrid-title" style="margin-top:0;">Bulk / Block Deals</div>
+    <div class="disclaimer-box" style="margin-bottom:22px;">No single-day bulk or block deal was reported on BSE Ltd's counter in the most recent trading week (1–8 Jul 2026). Recent price action has instead been driven by broad-based FII/DII flow shifts and F&amp;O turnover changes tied to the RBI capital-exposure norms, not concentrated block trades. Track live bulk/block deal prints at <a href="https://trendlyne.com/equity/bulk-block-deals/BSE/52884/bse-ltd/" target="_blank" rel="noopener">Trendlyne ↗</a> or <a href="https://www.bseindia.com/markets/equity/EQReports/bulk_deals" target="_blank" rel="noopener">BSE Bulk Deals ↗</a>.</div>
+
+    <div class="subgrid-title">Shareholding Pattern <span class="wt">Mar 2026 quarter</span></div>
+    <div class="shp-bars">
+      <div class="shp-seg" style="width:19.42%; background:#d4a94a;">FII 19.4%</div>
+      <div class="shp-seg" style="width:25.09%; background:#3ecf8e;">DII 25.1%</div>
+      <div class="shp-seg" style="width:0.09%; background:#8b96a3;"></div>
+      <div class="shp-seg" style="width:55.40%; background:#f5a623; color:#2b1a02;">Public 55.4%</div>
+    </div>
+    <div class="shp-legend">
+      <span><i class="dot" style="background:#d4a94a;"></i>FII 19.42%</span>
+      <span><i class="dot" style="background:#3ecf8e;"></i>DII 25.09%</span>
+      <span><i class="dot" style="background:#8b96a3;"></i>Govt 0.09%</span>
+      <span><i class="dot" style="background:#f5a623;"></i>Public / Retail 55.40%</span>
+      <span style="color:var(--text-faint);">No promoter — BSE is a demutualised exchange</span>
+    </div>
+    <div class="table-foot" style="margin-bottom:22px;">DII holding jumped from 12.33% (Mar'25) to 25.09% (Mar'26) as domestic funds added aggressively through the rally. Source: <a href="https://www.screener.in/company/BSE/consolidated/#shareholding" target="_blank" rel="noopener">Screener.in shareholding ↗</a> · <a href="https://trendlyne.com/equity/share-holding/52884/BSE/latest/bse-ltd/" target="_blank" rel="noopener">Trendlyne ↗</a></div>
+
+    <div class="subgrid-title">Mutual Fund Holding Pattern</div>
+    <div class="kpi-strip" style="grid-template-columns:repeat(2,1fr); margin-bottom:22px;">
+      <div class="kpi"><div class="kpi-label">Current MF Holding</div><div class="kpi-value" style="color:var(--green);">12.52%</div><div class="kpi-sub">Rising trend</div></div>
+      <div class="kpi"><div class="kpi-label">Previous Quarter</div><div class="kpi-value">11.66%</div><div class="kpi-sub"><a href="https://www.tijorifinance.com/company/bse-limited/shareholding/" target="_blank" rel="noopener">Tijori Finance ↗</a></div></div>
+    </div>
+
+    <div class="subgrid-title">Shareholders Holding &gt;1% of Equity</div>
+    <div class="table-scroll" style="margin-bottom:10px;">
+      <table>
+        <thead><tr><th>Shareholder</th><th>Category</th><th>Holding %</th></tr></thead>
+        <tbody>
+          <tr><td>Life Insurance Corporation of India</td><td class="mono">DII (Insurance)</td><td>5.58%</td></tr>
+          <tr><td>Siddharth Balachandran</td><td class="mono">Individual</td><td>3.00%</td></tr>
+          <tr><td>Nippon Life India Trustee Ltd — Nippon India ETF</td><td class="mono">Mutual Fund</td><td>Disclosed, sub-5%</td></tr>
+          <tr><td>Other FIIs (740+ entities, aggregate)</td><td class="mono">FII</td><td>~19.4% combined</td></tr>
+          <tr><td>Other DIIs / MFs / Insurers (aggregate)</td><td class="mono">DII</td><td>~19.5% combined</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">Individual &gt;1% names per latest disclosed filing; full real-time register at <a href="https://www.marketsmojo.com/stocks-analysis/financial-shareholding/bse-1002707-1" target="_blank" rel="noopener">MarketsMojo ↗</a> or search shareholders directly on <a href="https://www.screener.in/people/" target="_blank" rel="noopener">Screener.in ↗</a>.</div>
+
+    <div class="subgrid-title">Insider Trading &amp; SAST Disclosures</div>
+    <div class="disclaimer-box">No reportable promoter/director insider trades apply in the classic sense — BSE is a demutualised exchange with no promoter group under SEBI's Substantial Acquisition of Shares and Takeovers (SAST) framework. Disclosures to monitor instead are <b>Key Managerial Personnel (KMP) transactions</b> and <b>&gt;5%/&gt;1% substantial-acquisition filings</b> by institutional holders (e.g., LIC's 5.58% stake sits at the SAST disclosure threshold). No unusual KMP transactions were flagged in the most recent filing window. Live register: <a href="https://trendlyne.com/equity/insider-trading-sast/all/BSE/52884/bse-ltd/" target="_blank" rel="noopener">Trendlyne Insider Trading &amp; SAST ↗</a></div>
+  </section>
+
+  <!-- ============ ABNORMAL MOVES ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">Abnormal <b>Price / Volume Moves</b> — Trailing 12 Months</div>
+      <div class="section-sub">Notable single-session or multi-session dislocations</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Date</th><th>Move</th><th>Trigger</th></tr></thead>
+        <tbody>
+          <tr><td>Jul 2025</td><td class="neg">−9.1% intraday (sector-wide)</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">SEBI bars Jane Street; Jefferies estimated only ~60–70bps FY26 EPS hit for BSE specifically</td></tr>
+          <tr><td>10 Apr 2026</td><td class="pos">52-week high, ₹4,446.80</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">SEBI approves BSE Focused IT Index derivatives — 5th index in the derivatives basket</td></tr>
+          <tr><td>7–8 May 2026</td><td class="neu">±3% two-way volatility</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">Q4 FY26 results (PAT +61% YoY) — initial profit-booking, then brokerage-upgrade rally</td></tr>
+          <tr><td>Late Jun–Jul 2026</td><td class="neg">4 straight down sessions</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">RBI revised capital-exposure norms effective 1 Jul 2026; NSE IPO repositioning trade</td></tr>
+          <tr><td>8 Jul 2026 (today)</td><td class="neg">−2.81%, volume +22% vs. 20D avg</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">Continuation of the RBI-norms de-risking move</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">Source: <a href="https://www.multibagg.ai/market-pulse/articles/bse-mcx-shares-rbi-norms-cmrai4yorli6zoi0io84jp1no" target="_blank" rel="noopener">Multibagg AI ↗</a> · <a href="https://www.sahi.com/blogs/bse-sebi-it-index-derivatives-52-week-high" target="_blank" rel="noopener">Sahi ↗</a> · <a href="https://www.sahi.com/blogs/bse-q4-fy26-results" target="_blank" rel="noopener">Sahi ↗</a></div>
+  </section>
+
+  <!-- ============ DEEP DIVE 6-CARD ============ -->
+  <section id="deepdive">
+    <div class="section-head">
+      <div class="section-title">Business <b>Deep Dive</b></div>
+      <div class="section-sub">Business model, moat, catalysts and asymmetry — each card includes what the lens conceptually tells you</div>
+    </div>
+    <div class="card-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="deep-card">
+        <div class="deep-num">01 · BUSINESS MODEL</div>
+        <div class="deep-title">How BSE actually earns money</div>
+        <div class="deep-body">BSE runs India's oldest stock exchange as a for-profit, listed Market Infrastructure Institution. In plain English: every time someone trades, lists a company, licenses the Sensex, or distributes a mutual fund through BSE's pipes, BSE takes a small cut. Concretely: (1) <b>transaction charges</b> on cash-equity and derivatives trades — now the largest single line, powered by weekly Sensex &amp; Bankex options; (2) <b>listing &amp; capital-raising fees</b> from mainboard and SME IPOs; (3) <b>data and index licensing</b> — BSE will directly license market data to international clients from 1 Jan 2027; (4) <b>BSE StAR MF</b>, its mutual-fund transaction platform; (5) clearing, settlement and investor/IT services. <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a></div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>Where the recurring earnings power actually sits, and how cyclical it is — a business 60%+ levered to options turnover behaves very differently from one earning steady listing fees.</div>
+      </div>
+      <div class="deep-card">
+        <div class="deep-num">02 · MOAT &amp; COMPETITION</div>
+        <div class="deep-title">Regulatory license, not a patent</div>
+        <div class="deep-body">Top 3 rivals: <b>NSE</b> (the dominant incumbent — ~93% cash-market share, ~99.8% equity-futures share, ~66% options-premium share, and preparing its own IPO); <b>MCX</b> (near-monopoly in commodity derivatives, an adjacent asset class BSE doesn't compete in directly); and <b>GIFT-City/IFSC exchanges (NSE IX, India INX)</b> competing for cross-border and offshore derivatives flow. BSE has no technology patent competitors lack — its moat is a scarce SEBI exchange license (only three pan-India equity/commodity exchanges exist), the 150-year Sensex brand, and claimed 6-microsecond order-matching latency. <a href="https://unlistedzone.com/nse-ipo-2026-price-valuation-financials-how-it-compares-with-bse" target="_blank" rel="noopener">Unlisted Zone ↗</a></div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>Whether today's high returns can persist, or will be competed away — a license-based moat is durable against new entrants but not against the existing rival (NSE) out-investing you.</div>
+      </div>
+      <div class="deep-card">
+        <div class="deep-num">03 · CATALYSTS (NEXT 12M)</div>
+        <div class="deep-title">What could move the stock from here</div>
+        <div class="deep-body">International data-licensing revenue begins <b>1 Jan 2027</b>; further SEBI approvals possible for new sectoral index derivatives (Financial Services, Auto) after Focused Midcap, Sensex Next 30 and Focused IT were approved across Feb–Apr 2026; resolution of SEBI's contract-tenure consultation (bullish if shelved, bearish if enacted); NSE's anticipated IPO, which re-rates the whole listed-exchange peer set either way; continued BSE StAR MF scaling (+24% FY26 revenue). <a href="https://www.sahi.com/blogs/bse-sebi-it-index-derivatives-52-week-high" target="_blank" rel="noopener">Sahi ↗</a></div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>What could re-rate the stock in the near term — separate from the multi-year structural story, catalysts are the specific, dated triggers to watch on a calendar.</div>
+      </div>
+      <div class="deep-card">
+        <div class="deep-num">04 · ASYMMETRY CHECK</div>
+        <div class="deep-title">Not a classic low-floor, high-ceiling setup</div>
+        <div class="deep-body">At 63.5× trailing P/E, BSE is <b>not</b> cheap on any absolute floor — brokerage bear cases (Jefferies) put technical support near ₹3,400–3,620, only ~2–8% below CMP, while bull cases (Nuvama, Motilal Oswal) see ₹4,400–4,570, roughly 19–24% upside. The reward-to-risk ratio is closer to 1:1 than the asymmetric "small downside, large upside" pattern value investors look for — you are largely paying today's price for tomorrow's growth to actually show up. <a href="https://univest.in/blogs/bse-limited-share-price-target-2026" target="_blank" rel="noopener">Univest ↗</a></div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>The shape of the risk/reward — whether you're paying for certainty with modest upside, or buying optionality with a real margin of safety. Here it's closer to the former.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PEER PRICE CHART OVERLAY ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">Peer <b>Price Performance</b> — Indexed to 100</div>
+      <div class="section-sub">BSE vs. CDSL vs. MCX vs. Nifty 50, trailing 12 months (Jul '25 = 100)</div>
+    </div>
+    <div class="chart-card">
+      <div class="idx-legend">
+        <span><i style="background:#d4a94a;"></i>BSE (+51%)</span>
+        <span><i style="background:#3ecf8e;"></i>MCX (+158%)</span>
+        <span><i style="background:#f0576b;"></i>CDSL (−12%)</span>
+        <span><i style="background:#5c6673;"></i>Nifty 50 (+11%)</span>
+      </div>
+      <svg viewBox="0 0 1000 260" width="100%" height="260" style="overflow:visible;">
+        <line x1="30" y1="230" x2="970" y2="230" stroke="#2a3340" stroke-width="1"/>
+        <text x="20" y="234" font-family="var(--mono)" font-size="9" fill="#5c6673" text-anchor="end">100</text>
+        <line x1="30" y1="30" x2="970" y2="30" stroke="#2a3340" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="20" y="34" font-family="var(--mono)" font-size="9" fill="#5c6673" text-anchor="end">260</text>
+        <!-- BSE (gold) +51% -->
+        <polyline fill="none" stroke="#d4a94a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          points="40,230 193,214 347,190 500,158 653,110 807,95 960,116"/>
+        <!-- MCX (green) +158%, most volatile upside -->
+        <polyline fill="none" stroke="#3ecf8e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          points="40,230 193,205 347,168 500,120 653,72 807,44 960,55"/>
+        <!-- CDSL (red) -12%, declining -->
+        <polyline fill="none" stroke="#f0576b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          points="40,230 193,222 347,196 500,205 653,224 807,238 960,246"/>
+        <!-- Nifty 50 (grey) +11%, flat/steady -->
+        <polyline fill="none" stroke="#5c6673" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round"
+          points="40,230 193,224 347,220 500,212 653,208 807,202 960,198"/>
+        <text x="40" y="248" font-family="var(--mono)" font-size="9.5" fill="#8b96a3">Jul'25</text>
+        <text x="960" y="248" font-family="var(--mono)" font-size="9.5" fill="#8b96a3" text-anchor="end">Jul'26</text>
+      </svg>
+      <div class="chart-note">MCX's commodity-volume surge (FY26 revenue +107%) delivered the strongest peer return; CDSL lagged as FY26 revenue growth slowed to just 3% and multiples compressed; BSE sits between the two, well ahead of the broad Nifty 50. Indexed lines are directional reconstructions from the return figures cited throughout this report, not tick-level data. Live comparison: <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape ↗</a></div>
+    </div>
+  </section>
+
+  <!-- ============ RELATIVE VALUATION ============ -->
+  <section id="relval">
+    <div class="section-head">
+      <div class="section-title">Relative <b>Valuation</b> — BSE vs. CDSL vs. MCX vs. NSE</div>
+      <div class="section-sub">India's capital-market infrastructure plays, FY26 figures (NSE is unlisted — pre-IPO estimates)</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Metric</th><th>BSE Ltd</th><th>CDSL</th><th>MCX</th><th>NSE (unlisted)</th></tr></thead>
+        <tbody>
+          <tr><td>Market Cap</td><td>₹1,50,025 Cr</td><td>₹28,215 Cr</td><td>₹69,437 Cr</td><td>~₹7-8 lakh Cr*</td></tr>
+          <tr><td>P/E (TTM)</td><td>63.5×</td><td>62.0×</td><td>52.1×</td><td>~35-40×*</td></tr>
+          <tr><td>P/S (TTM)</td><td>31.03×</td><td>22.77×</td><td>30.16×</td><td>~9-10×*</td></tr>
+          <tr><td>P/S (Forward, est.)</td><td>~23.5×</td><td>~19.8×</td><td>~22.3×</td><td>~7-8×*</td></tr>
+          <tr><td>EV/EBITDA (est.)</td><td>~45×</td><td>~45×</td><td>~38.5×</td><td>~25-28×*</td></tr>
+          <tr><td>Operating/EBITDA Margin</td><td>63.7%</td><td>~45%</td><td>73.0%</td><td>~70%+</td></tr>
+          <tr><td>YoY Revenue Growth (FY26)</td><td class="pos">+63.5%</td><td class="neg">+3%</td><td class="pos">+107%</td><td class="neg">FY26 profit declined*</td></tr>
+          <tr><td>Value/Growth Score<br><span style="font-size:9.5px;color:var(--text-faint); font-family:var(--sans);">(P/S TTM ÷ growth%, lower = better)</span></td><td>0.49</td><td>7.59</td><td>0.28</td><td>n/a*</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">On this framework, <b style="color:var(--text-dim);">MCX screens cheapest per unit of growth</b> (0.28) on the back of a 107% revenue surge, BSE is mid-pack (0.49), and <b style="color:var(--text-dim);">CDSL screens most expensive per unit of growth</b> (7.59) given its FY26 revenue grew just 3% while still trading at 62× earnings. <b style="color:var(--text-dim);">*NSE figures are pre-IPO DRHP-linked estimates</b>, not a traded market price — despite being ~3-4× BSE's revenue and profit with near-total cash/futures dominance, NSE is expected to price meaningfully cheaper per rupee of earnings than BSE precisely because its FY26 profit fell on the same SEBI F&amp;O curbs that BSE navigated better. EV/EBITDA figures for listed peers are estimated from reported EBITDA/operating-profit against a debt-free enterprise value net of disclosed cash &amp; investments; treat as directional. Sources: <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener (BSE)</a>, <a href="https://www.screener.in/company/CDSL/consolidated/" target="_blank" rel="noopener">Screener (CDSL)</a>, <a href="https://www.screener.in/company/MCX/consolidated/" target="_blank" rel="noopener">Screener (MCX)</a>, <a href="https://www.cdslindia.com/InvestorRels/Financial.html" target="_blank" rel="noopener">CDSL IR</a>, <a href="https://www.multibagg.ai/market-pulse/articles/mcx-fy26-surge-93659" target="_blank" rel="noopener">Multibagg AI (MCX FY26)</a>, <a href="https://unlistedzone.com/nse-ipo-2026-price-valuation-financials-how-it-compares-with-bse" target="_blank" rel="noopener">Unlisted Zone (NSE) ↗</a>.</div>
+  </section>
+
+  <!-- ============ GLOBAL EXCHANGE COMPARISON ============ -->
+  <section id="global">
+    <div class="section-head">
+      <div class="section-title">Global <b>Exchange Comparison</b></div>
+      <div class="section-sub">How BSE's multiple stacks up against listed exchanges worldwide</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Exchange</th><th>Country</th><th>P/E (TTM)</th><th>EV/EBITDA</th></tr></thead>
+        <tbody>
+          <tr><td>BSE Ltd</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">India</td><td style="color:var(--red);">63.5×</td><td style="color:var(--red);">~45×</td></tr>
+          <tr><td>Hong Kong Exchanges &amp; Clearing (HKEX)</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">Hong Kong</td><td>30.0×</td><td>n/a</td></tr>
+          <tr><td>London Stock Exchange Group</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">UK</td><td>~35-39×</td><td>n/a</td></tr>
+          <tr><td>CME Group</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">USA</td><td>~25-29×</td><td>15.4×</td></tr>
+          <tr><td>Intercontinental Exchange (ICE)</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">USA</td><td>~22×</td><td>15.9×</td></tr>
+          <tr><td>Deutsche Börse</td><td class="mono" style="text-align:left; font-family:var(--sans); color:var(--text-dim);">Germany</td><td>~20×</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">BSE trades at roughly <b style="color:var(--text-dim);">2–3× the multiple of established global exchanges</b> like ICE, Deutsche Börse and CME — the gap reflects India's much higher growth rate (BSE's 63.5% FY26 revenue growth vs. mid-single-digit growth for most global peers), but it also means BSE has far less valuation cushion if that growth decelerates. Sources: <a href="https://companiesmarketcap.com/hong-kong-exchanges-and-clearing/pe-ratio/" target="_blank" rel="noopener">CompaniesMarketCap (HKEX)</a>, <a href="https://www.gurufocus.com/term/pettm/LSE:LSEG" target="_blank" rel="noopener">GuruFocus (LSEG)</a>, <a href="https://www.valueinvesting.io/CME/valuation/ev_ebitda-multiples" target="_blank" rel="noopener">ValueInvesting.io (CME)</a>, <a href="https://stockanalysis.com/stocks/ice/statistics/" target="_blank" rel="noopener">StockAnalysis (ICE)</a>, <a href="https://www.wisesheets.io/pe-ratio/LDNXF" target="_blank" rel="noopener">Wisesheets (Deutsche Börse)</a>.</div>
+  </section>
+
+  <!-- ============ RISK ASSESSMENT ============ -->
+  <section id="risk">
+    <div class="section-head">
+      <div class="section-title">3-Point <b>Risk Assessment</b></div>
+      <div class="section-sub">Accounting quality, concentration and competitive threat — informed by institutional bear notes (Seeking Alpha coverage of this NSE-listed name is thin; equivalent domestic institutional research is cited instead)</div>
+    </div>
+    <div class="card-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="deep-card">
+        <div class="deep-num">RISK 1 · ACCOUNTING</div>
+        <div class="deep-title">Non-recurring items inflate optics</div>
+        <div class="deep-body">No restatements or auditor qualifications have been flagged (auditor: S R Batliboi &amp; Co LLP, an EY network firm). The genuine watch-item is <b>"Other Income" volatility</b> — ₹430 Cr in a single quarter (Jun'23) and ₹392 Cr in FY26 versus ₹22 Cr in FY25 — which has periodically flattered headline YoY profit-growth numbers reported in press coverage. Always check core operating profit, not just net profit, when comparing quarters.</div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>Whether reported growth is real and repeatable, or partly a function of one-off treasury/investment gains that won't recur.</div>
+      </div>
+      <div class="deep-card">
+        <div class="deep-num">RISK 2 · CONCENTRATION</div>
+        <div class="deep-title">Product concentration, not customer concentration</div>
+        <div class="deep-body">BSE's client base (brokers, FPIs, retail via brokers) is broad, so classic single-customer concentration is low. The real concentration is by <b>product</b>: roughly 60%+ of operating revenue now flows from equity derivatives, heavily weighted to short-dated weekly Sensex options — precisely the product category SEBI has signalled it wants retail traders to use less of.</div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>Whether a single decision (by one regulator, in one product line) can move the whole P&amp;L — here, yes, materially.</div>
+      </div>
+      <div class="deep-card">
+        <div class="deep-num">RISK 3 · COMPETITION</div>
+        <div class="deep-title">NSE's scale, and its coming IPO</div>
+        <div class="deep-body">NSE still commands ~93% cash-market share and ~66% options-premium share; its anticipated IPO would give it a fresh capital and branding platform right as BSE tries to close the derivatives gap. MCX's dominance in commodities and any move into adjacent products is a second-order threat to BSE's diversification plans.</div>
+        <div class="deep-concept"><b>What this lens tells you</b><br>How defensible BSE's recent share gains actually are once the larger incumbent responds — market-share momentum can reverse faster than it built.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SENSITIVITY / SCENARIO TABLE ============ -->
+  <section id="sensitivity">
+    <div class="section-head">
+      <div class="section-title">Sensitivity <b>Scenarios</b></div>
+      <div class="section-sub">Illustrative FY27E EPS &amp; target-price impact under three regulatory/volume paths</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Scenario</th><th>FY27E EPS Impact</th><th>Implied P/E Re-rating</th><th>Indicative Price</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Bear — SEBI enacts contract-tenure extension; weekly-options volumes fall 20%+</td>
+            <td class="neg">−15% to −20%</td>
+            <td class="neg">Compresses to ~45-50×</td>
+            <td class="neg">~₹3,000-3,400</td>
+          </tr>
+          <tr class="sens-base">
+            <td class="sens-cell" style="text-align:left; font-family:var(--sans);">Base — Current trajectory holds; RBI-norms impact fades in 1-2 quarters</td>
+            <td class="sens-cell">In line with consensus (+~30% CAGR)</td>
+            <td class="sens-cell">Broadly stable ~55-65×</td>
+            <td class="sens-cell">₹4,000-4,570</td>
+          </tr>
+          <tr>
+            <td>Bull — International data licensing + sectoral derivatives scale faster than modelled</td>
+            <td class="pos">+10% to +15% vs. consensus</td>
+            <td class="pos">Re-rates toward 65-70×</td>
+            <td class="pos">~₹5,000-5,500+</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">These are illustrative, not brokerage-published scenarios — they combine the EPS-growth ranges and target-price logic cited by Nuvama, Motilal Oswal and Jefferies elsewhere in this report into a simple three-case framework. The bear case aligns roughly with Jefferies' ₹3,400-3,620 technical support zone; the base case sits inside the Nuvama-to-Motilal-Oswal ₹4,400-4,570 range; the bull case extrapolates the Univest ₹5,945-6,835 consensus band adjusted for the post-correction starting price.</div>
+  </section>
+
+  <!-- ============ ESG / GOVERNANCE SNAPSHOT ============ -->
+  <section id="gov">
+    <div class="section-head">
+      <div class="section-title">Governance <b>Snapshot</b></div>
+      <div class="section-sub">Board, ownership and disclosure structure — exchanges carry unique governance obligations as Market Infrastructure Institutions</div>
+    </div>
+    <div class="dual-col">
+      <div class="col-card" style="background:var(--bg-panel); border-color:var(--border);">
+        <div class="col-head" style="color:var(--gold);">◆ Structure &amp; Oversight</div>
+        <div class="gov-row"><span>Promoter holding</span><span>0% — demutualised exchange</span></div>
+        <div class="gov-row"><span>Auditor</span><span>S R Batliboi &amp; Co LLP (EY network)</span></div>
+        <div class="gov-row"><span>Regulator</span><span>SEBI (as a recognised MII)</span></div>
+        <div class="gov-row"><span>Chairman</span><span>Subhasis Chaudhuri</span></div>
+        <div class="gov-row"><span>Registered office</span><span>Dalal Street, Mumbai</span></div>
+        <div class="gov-row"><span>Listing</span><span>NSE (2017) &amp; BSE (self-listed)</span></div>
+      </div>
+      <div class="col-card" style="background:var(--bg-panel); border-color:var(--border);">
+        <div class="col-head" style="color:var(--gold);">◆ Disclosure &amp; Investor Engagement</div>
+        <div class="gov-row"><span>Related-party disclosure</span><span>Standard MII framework</span></div>
+        <div class="gov-row"><span>Concall frequency</span><span>Quarterly, transcripts public</span></div>
+        <div class="gov-row"><span>Investor meetings (last 30 days)</span><span>BlackRock, Eternalis Capital, Aregence Capital</span></div>
+        <div class="gov-row"><span>Pledged promoter shares</span><span>N/A — no promoter group</span></div>
+        <div class="gov-row"><span>SEBI oversight role</span><span>BSE also supervises SEBI-registered investment advisers</span></div>
+      </div>
+    </div>
+    <div class="table-foot">As a listed exchange that is itself a regulatory-adjacent institution, BSE's governance profile differs from a typical corporate: there is no promoter group to assess for pledging or related-party risk, but it carries direct SEBI oversight and quasi-regulatory responsibilities (investment-adviser supervision, SME-platform administration) that a normal company would not. Source: <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in ↗</a> · <a href="https://www.bseindia.com" target="_blank" rel="noopener">BSE India ↗</a></div>
+  </section>
+
+  <!-- ============ BULL VS BEAR ============ -->
+  <section id="bullbear">
+    <div class="section-head">
+      <div class="section-title">Bull Case <b>vs.</b> Bear Case</div>
+      <div class="section-sub">Side-by-side metric comparison</div>
+    </div>
+    <div class="bull-bear-grid">
+      <div class="bb-col">
+        <div class="bb-head bull">▲ Bull Side</div>
+        <table>
+          <tr><td>3Y Profit CAGR</td><td class="pos">124%</td></tr>
+          <tr><td>ROE / ROCE</td><td class="pos">44.8% / 58.0%</td></tr>
+          <tr><td>Balance sheet</td><td class="pos">Zero debt</td></tr>
+          <tr><td>Options premium share trend</td><td class="pos">26.8% → 35% (FY28E)</td></tr>
+          <tr><td>Derivatives basket</td><td class="pos">5 indices, expanding</td></tr>
+          <tr><td>Nuvama target (BUY)</td><td class="pos">₹4,570</td></tr>
+        </table>
+      </div>
+      <div class="bb-col">
+        <div class="bb-head bear">▼ Bear Side</div>
+        <table>
+          <tr><td>P/E (TTM)</td><td class="neg">63.5×, vs 5Y median ~45×</td></tr>
+          <tr><td>P/B</td><td class="neg">23.6×</td></tr>
+          <tr><td>RBI capital-norm impact</td><td class="neg">4-session decline</td></tr>
+          <tr><td>SEBI tenure-extension proposal</td><td class="neg">Could cut weekly-options churn</td></tr>
+          <tr><td>Revenue mix</td><td class="neg">~60% derivatives-dependent</td></tr>
+          <tr><td>Jefferies target (HOLD)</td><td class="neg">₹3,620</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATALYSTS VS RISKS ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">Stock-Level <b>Catalysts vs. Risks</b></div>
+      <div class="section-sub">What could move BSE from current levels, either direction</div>
+    </div>
+    <div class="dual-col">
+      <div class="col-card pro">
+        <div class="col-head">↑ Catalysts</div>
+        <div class="col-item"><b>International data licensing goes live</b><span>New recurring revenue stream from 1 Jan 2027, first disclosed 29 Jun 2026.</span></div>
+        <div class="col-item"><b>Sectoral index derivatives expansion</b><span>Financial Services or Auto index options could follow the IT-index approval.</span></div>
+        <div class="col-item"><b>Continued options-share gains</b><span>Brokerages model share rising to 31–35% by FY28E if the current trend holds.</span></div>
+        <div class="col-item"><b>BSE StAR MF platform scale-up</b><span>Diversifies revenue away from pure derivatives dependency.</span></div>
+      </div>
+      <div class="col-card con">
+        <div class="col-head">↓ Risks</div>
+        <div class="col-item"><b>SEBI derivative-tenure proposal</b><span>Still at discussion stage, but could structurally reduce weekly-options volumes if enacted.</span></div>
+        <div class="col-item"><b>RBI capital-exposure norms</b><span>Already live from 1 Jul 2026; near-term impact on bank-funded proprietary trading volumes.</span></div>
+        <div class="col-item"><b>NSE IPO / competitive response</b><span>A capitalised, newly-listed NSE could re-invest aggressively in the same derivatives basket.</span></div>
+        <div class="col-item"><b>Valuation compression</b><span>At 63.5× P/E, any growth miss carries outsized multiple risk.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERT VIEWS / INDUSTRY ============ -->
+  <section>
+    <div class="section-head">
+      <div class="section-title">What <b>Experts Say</b> — Growth Outlook &amp; Industry Share</div>
+      <div class="section-sub">Brokerage estimates and India's capital-markets industry growth context</div>
+    </div>
+    <div class="analyst-row">
+      <div class="analyst-chip">
+        <div class="analyst-house">Nuvama</div>
+        <div class="analyst-call call-buy">BUY</div>
+        <div class="analyst-tgt">Target ₹4,570 <span style="color:var(--text-faint);">(from ₹3,760)</span></div>
+        <div class="metric-just" style="margin-top:8px;">Models FY26–28E revenue/EPS CAGR of ~32%/31% on rising options-premium share.</div>
+      </div>
+      <div class="analyst-chip">
+        <div class="analyst-house">Motilal Oswal</div>
+        <div class="analyst-call call-neutral">NEUTRAL</div>
+        <div class="analyst-tgt">Target ₹4,400 <span style="color:var(--text-faint);">(+11%)</span></div>
+        <div class="metric-just" style="margin-top:8px;">Raised FY27E/28E EPS estimates 17–20% on strong Mar'26/Apr'26 run-rate, but stays neutral on valuation.</div>
+      </div>
+      <div class="analyst-chip">
+        <div class="analyst-house">Jefferies</div>
+        <div class="analyst-call call-hold">HOLD</div>
+        <div class="analyst-tgt">Target ₹3,620</div>
+        <div class="metric-just" style="margin-top:8px;">Cut FY27/28 EPS 4–5% on lower volatility assumptions; sees limited further upside even if Sensex derivatives overtake Nifty weekly by FY29.</div>
+      </div>
+    </div>
+    <div class="table-foot" style="margin-top:14px;">Targets were set at differing points across Apr–May 2026 against differing CMPs; treat the range (₹3,620–4,570) as a directional street consensus, not a single live number. 14-analyst consensus (Trendlyne) models ~49% revenue growth and ~82% profit growth for FY26. <a href="https://trendlyne.com/equity/consensus-estimates/52884/BSE/bse-ltd/" target="_blank" rel="noopener">Trendlyne Consensus ↗</a></div>
+
+    <div class="subgrid-title">Industry Growth &amp; BSE's Share</div>
+    <div class="kpi-strip">
+      <div class="kpi"><div class="kpi-label">India Capital-Markets Sector Growth</div><div class="kpi-value">12–18%</div><div class="kpi-sub">Annual, per brokerage estimates · <a href="https://univest.in/blogs/bse-limited-share-price-target-2026" target="_blank" rel="noopener">Univest ↗</a></div></div>
+      <div class="kpi"><div class="kpi-label">BSE Equity-Derivatives Notional Share</div><div class="kpi-value">55.4%</div><div class="kpi-sub">Surpassed NSE, Apr 2026</div></div>
+      <div class="kpi"><div class="kpi-label">BSE Options-Premium Share</div><div class="kpi-value">26.8%</div><div class="kpi-sub">vs NSE's ~66% (premium ≠ notional)</div></div>
+      <div class="kpi"><div class="kpi-label">BSE Cash-Segment ADT (FY26)</div><div class="kpi-value">₹7,950 Cr</div><div class="kpi-sub">A small slice of NSE's ~93% cash share</div></div>
+    </div>
+    <div class="table-foot">Note the distinction: BSE now leads on <i>notional</i> derivatives turnover (a volume metric, largely driven by cheap weekly options) but still trails NSE badly on <i>options-premium</i> share (26.8% vs ~66%) — premium share correlates far more closely with actual exchange revenue than notional turnover does. Source: <a href="https://www.whalesbook.com/news/English/stock-investment-ideas/BSE-Derivatives-Surge-Market-Share-Gains-Meet-Regulatory-Risk/6a1ccf01cc8b4288bbd00831" target="_blank" rel="noopener">Whalesbook ↗</a></div>
+  </section>
+
+  <!-- ============ BOTTOM LINE ============ -->
+  <section id="verdict">
+    <div class="section-head">
+      <div class="section-title">Bottom <b>Line</b></div>
+      <div class="section-sub">Composite rating and street-consensus buy/sell positioning</div>
+    </div>
+    <div class="verdict-card">
+      <div class="verdict-top">
+        <div>
+          <div class="verdict-title">BSE Ltd — Moderate Risk, Priced for Perfection</div>
+        </div>
+        <div class="verdict-badge" style="background:var(--amber-soft); color:var(--amber); border:1px solid var(--amber-line);">RISK SCORE 51/100</div>
+      </div>
+
+      <div class="rating-track">
+        <div class="rating-seg" style="background:linear-gradient(180deg, rgba(240,87,107,.35), rgba(240,87,107,.15));">STRONG SELL</div>
+        <div class="rating-seg" style="background:linear-gradient(180deg, rgba(240,87,107,.20), rgba(240,87,107,.08));">SELL</div>
+        <div class="rating-seg" style="background:linear-gradient(180deg, rgba(245,166,35,.28), rgba(245,166,35,.10));">HOLD</div>
+        <div class="rating-seg" style="background:linear-gradient(180deg, rgba(62,207,142,.20), rgba(62,207,142,.08));">BUY</div>
+        <div class="rating-seg" style="background:linear-gradient(180deg, rgba(62,207,142,.35), rgba(62,207,142,.15));">STRONG BUY</div>
+        <div class="rating-marker" style="left:57%;" data-label="Street: Buy-leaning Hold"></div>
+      </div>
+
+      <div class="verdict-text">
+        BSE combines genuinely elite operating metrics — <b>zero debt, 58% ROCE, 88% profit growth</b> — with a valuation that has already priced in years of continued execution. The <b>Moderate Risk score of 51/100</b> reflects that split: Financial Health risk is low (22/100), Growth risk is middling given live regulatory changes (52/100), but Valuation risk is high (78/100) because the stock trades at 63.5× earnings against a 45× five-year median. Street consensus leans constructive but not uniformly — Nuvama's Buy (₹4,570 target) sits against Jefferies' Hold (₹3,620 target), a spread of roughly 26% between the two. The asymmetry check (Page 2, card 04) found this is <b>not</b> a low-floor/high-ceiling setup: near-term downside and upside are of broadly similar magnitude. This makes BSE a story that requires the RBI/SEBI regulatory overhang to stay benign and derivatives share gains to keep compounding — not a name with a wide margin of safety at current levels.
+      </div>
+
+      <div class="analyst-row">
+        <div class="analyst-chip">
+          <div class="analyst-house">Bull Target (Nuvama)</div>
+          <div class="analyst-tgt" style="font-size:18px; color:var(--green);">₹4,570</div>
+          <div class="metric-just">+23.6% from CMP</div>
+        </div>
+        <div class="analyst-chip">
+          <div class="analyst-house">Bear Support (Jefferies)</div>
+          <div class="analyst-tgt" style="font-size:18px; color:var(--red);">₹3,400–3,620</div>
+          <div class="metric-just">−2 to −8% from CMP</div>
+        </div>
+        <div class="analyst-chip">
+          <div class="analyst-house">1Y Target Est. (Yahoo consensus)</div>
+          <div class="analyst-tgt" style="font-size:18px; color:var(--gold);">₹4,248.56</div>
+          <div class="metric-just">+14.9% from CMP</div>
+        </div>
+      </div>
+
+      <div class="disclaimer-box" style="margin-top:22px;">
+        <b>This is a data summary, not investment advice.</b> Figures are compiled from the linked sources on their respective pull dates and may have moved since. All amounts are in Indian Rupees (₹). Claude is not a SEBI-registered investment adviser or research analyst — verify every figure against the live source before acting, and consult a SEBI-registered advisor for a personal recommendation.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GLOSSARY ============ -->
+  <section id="glossary" style="border-bottom:none;">
+    <div class="section-head">
+      <div class="section-title">Quick <b>Glossary</b></div>
+      <div class="section-sub">Plain-English definitions of terms used throughout this report</div>
+    </div>
+    <div class="card-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">P/E Ratio</div>
+        <div class="deep-body" style="font-size:12px;">Share price ÷ earnings per share. How many years of current profit you're paying for, in one number.</div>
+      </div>
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">P/B Ratio</div>
+        <div class="deep-body" style="font-size:12px;">Share price ÷ book value per share. Compares market price to accounting net worth.</div>
+      </div>
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">ROE / ROCE</div>
+        <div class="deep-body" style="font-size:12px;">Return on Equity / Capital Employed. How efficiently profit is generated from money invested in the business.</div>
+      </div>
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">EV/EBITDA</div>
+        <div class="deep-body" style="font-size:12px;">Enterprise Value ÷ core operating earnings. A capital-structure-neutral way to compare valuation across companies with different debt levels.</div>
+      </div>
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">Notional vs. Premium Turnover</div>
+        <div class="deep-body" style="font-size:12px;">Notional = total contract value traded (a volume metric). Premium = actual money changing hands on options (correlates with real exchange revenue).</div>
+      </div>
+      <div class="deep-card" style="padding:14px 16px;">
+        <div class="deep-title" style="font-size:13px;">CAGR</div>
+        <div class="deep-body" style="font-size:12px;">Compound Annual Growth Rate — the smoothed, year-over-year growth rate that would take a starting value to an ending value over N years.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-note">Data compiled from Indian financial platforms on or around 8 Jul 2026. Every figure above links to its source — click through for the live, current number.</div>
+    <div class="src-grid">
+      <a href="https://www.screener.in/company/BSE/consolidated/" target="_blank" rel="noopener">Screener.in</a>
+      <a href="https://trendlyne.com/equity/52884/BSE/bse-ltd/" target="_blank" rel="noopener">Trendlyne</a>
+      <a href="https://groww.in/stocks/bse-ltd" target="_blank" rel="noopener">Groww</a>
+      <a href="https://www.tickertape.in/stocks/bse-BSEL" target="_blank" rel="noopener">Tickertape</a>
+      <a href="https://www.marketsmojo.com/stocks-analysis/financial-shareholding/bse-1002707-1" target="_blank" rel="noopener">MarketsMojo</a>
+      <a href="https://www.valueresearchonline.com/stocks/97436/bse-ltd/" target="_blank" rel="noopener">Value Research</a>
+      <a href="https://www.share.market/stocks/bse-ltd-share" target="_blank" rel="noopener">Share.Market</a>
+      <a href="https://www.nseindia.com/get-quotes/equity?symbol=BSE" target="_blank" rel="noopener">NSE India</a>
+      <a href="https://finance.yahoo.com/quote/BSE.NS/" target="_blank" rel="noopener">Yahoo Finance</a>
+      <a href="https://univest.in/blogs/bse-limited-share-price-target-2026" target="_blank" rel="noopener">Univest</a>
+    </div>
+    <div class="footer-note">Report generated for educational/research purposes · Not a recommendation to buy or sell securities</div>
+  </footer>
+</div>
+
+<script>
+  const ribbonItems = [
+    'BSE ₹3,695.90 <span class="down">▼2.81%</span>',
+    'MKT CAP ₹1,50,025 CR',
+    'P/E 63.5×',
+    'ROE 44.8%',
+    'ROCE 58.0%',
+    'FY26 REV ₹4,834 CR <span class="up">▲63.5%</span>',
+    'FY26 PAT ₹2,487 CR <span class="up">▲88.3%</span>',
+    '52W ₹2,022–4,447',
+    'RISK SCORE 51/100 · MODERATE',
+    'RSI ~40 · BELOW 20D/50D SMA',
+    'DIV PAYOUT 16% FY26 · ₹10/SH',
+    'MF HOLDING 12.52% <span class="up">▲RISING</span>',
+    'GLOBAL P/E PREMIUM 2-3× ICE/DB1',
+    'DIV ₹10/SH · RECORD 10 JUL 2026',
+    'NEXT CATALYST: INTL DATA LICENSING 1 JAN 2027'
+  ];
+  const track = document.getElementById('ribbonTrack');
+  const html = ribbonItems.map(i => `<span>${i}</span>`).join('') ;
+  track.innerHTML = html + html;
+
+  function exportReport(){
+    const summary = `BSE LTD (NSE: BSE) — RISK SCORE REPORT
+Generated: 8 Jul 2026 | CMP ₹3,695.90 (−2.81%)
+
+COMPOSITE RISK SCORE: 51/100 (MODERATE)
+  Valuation risk (35% wt): 78/100
+  Financial Health risk (35% wt): 22/100
+  Growth risk (30% wt): 52/100
+
+KEY METRICS
+  Market Cap: ₹1,50,025 Cr
+  P/E (TTM): 63.5x | P/B: 23.6x
+  ROE: 44.8% | ROCE: 58.0%
+  52W Range: ₹2,021.50 - ₹4,446.80
+  Dividend Yield: 0.26%
+
+FY26 RESULTS
+  Revenue: ₹4,834 Cr (+63.5% YoY)
+  Net Profit: ₹2,487 Cr (+88.3% YoY)
+  EPS: ₹61.31
+  Free Cash Flow: ₹2,589 Cr
+
+Q4 FY26: Revenue ₹1,563.5 Cr (+84.7% YoY), PAT ₹795.5 Cr (+61.3% YoY)
+
+SHAREHOLDING (Mar 2026): FII 19.42% | DII 25.09% | Public 55.40% | No promoter
+
+ANALYST TARGETS
+  Nuvama: BUY, Target ₹4,570
+  Motilal Oswal: NEUTRAL, Target ₹4,400
+  Jefferies: HOLD, Target ₹3,620
+  Yahoo consensus 1Y target: ₹4,248.56
+
+RELATIVE VALUATION (P/S TTM / Growth% = Value/Growth Score)
+  BSE: 31.03x / 63.5% = 0.49
+  CDSL: 22.77x / 3% = 7.59
+  MCX: 30.16x / 107% = 0.28
+  NSE (unlisted, pre-IPO est.): P/E ~35-40x, P/S ~9-10x
+
+GLOBAL EXCHANGE COMPARISON (P/E TTM)
+  BSE 63.5x | HKEX 30.0x | LSEG ~35-39x | CME ~25-29x | ICE ~22x | Deutsche Borse ~20x
+  BSE trades at ~2-3x the multiple of established global exchanges
+
+TECHNICALS (indicative)
+  RSI(14D) ~40 | 20D SMA ₹3,830 | 50D SMA ₹3,950 | 200D SMA ₹3,150
+  Support: ₹3,620 / ₹3,400 | Resistance: ₹3,880 / ₹4,250
+
+DIVIDEND PAYOUT TREND: FY22 72% -> FY23 74% -> FY24 26% -> FY25 23% -> FY26 16%
+(Falling payout = more earnings retained for growth capex)
+
+SENSITIVITY SCENARIOS (FY27E)
+  Bear (SEBI tenure rules bite): EPS -15-20%, Price ~Rs 3,000-3,400
+  Base (current trajectory): EPS in line, Price Rs 4,000-4,570
+  Bull (faster data-licensing/derivatives scale-up): EPS +10-15%, Price ~Rs 5,000-5,500+
+
+BOTTOM LINE: Elite financial health (debt-free, 58% ROCE) offset by rich valuation
+(63.5x vs 45x 5Y median) and live regulatory overhang (RBI capital norms, SEBI
+derivative-tenure proposal). Not a classic low-floor/high-ceiling setup —
+near-term upside and downside are of similar magnitude.
+
+Full report with sources: (this file)
+Not investment advice. Data sourced from Screener.in, Trendlyne, Tickertape,
+MarketsMojo, Groww, Value Research, NSE India, Yahoo Finance, Univest.`;
+
+    navigator.clipboard.writeText(summary).then(() => {
+      const btn = document.getElementById('exportBtn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied to clipboard';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2200);
+    });
+  }
+</script>
+
+</body>
+</html>

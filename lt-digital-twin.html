@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L&amp;T Digital Twin — Living Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-base:#07080B;
+    --bg-surface:#12151B;
+    --panel:rgba(255,255,255,0.045);
+    --panel-strong:rgba(255,255,255,0.08);
+    --border:rgba(255,255,255,0.09);
+    --gold:#C9A24B;
+    --blue:#3E7BFA;
+    --emerald:#2FBF88;
+    --crimson:#E5484D;
+    --amber:#F5A623;
+    --violet:#8B7CF6;
+    --text:#F5F6F8;
+    --text-dim:#9BA1AC;
+    --text-faint:#61666F;
+    --r-card:16px;
+    --r-pill:999px;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg-base);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--gold); color:#0A0C10; }
+  .num, .mono{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+  h1,h2,h3,.display{ font-family:'Manrope',sans-serif; letter-spacing:-0.01em; }
+  button{ font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.12); border-radius:8px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  #bg-canvas{ position:fixed; inset:0; z-index:0; width:100%; height:100%; opacity:.85; }
+  #bg-fog{ position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 8%, rgba(62,123,250,0.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 85%, rgba(201,162,75,0.07), transparent 60%),
+      radial-gradient(ellipse 45% 45% at 10% 80%, rgba(139,124,246,0.06), transparent 60%);
+  }
+
+  #app{ position:relative; z-index:2; height:100vh; display:flex; flex-direction:column; }
+
+  /* ---------- HUD ---------- */
+  .hud{
+    height:56px; flex:none; display:flex; align-items:center; gap:18px;
+    padding:0 20px; border-bottom:1px solid var(--border);
+    background:rgba(7,8,11,0.72); backdrop-filter:blur(20px);
+    position:relative; z-index:30;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; font-weight:700; font-size:14px; }
+  .brand .mark{
+    width:22px; height:22px; border-radius:6px;
+    background:linear-gradient(135deg,var(--gold),#8a6f2c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Manrope',sans-serif; font-weight:800; font-size:12px; color:#0A0C10;
+    box-shadow:0 0 12px rgba(201,162,75,.4);
+  }
+  .brand .sub{ color:var(--text-faint); font-weight:500; font-size:12px; }
+  .cmdk{
+    flex:1; max-width:340px; height:34px; display:flex; align-items:center; gap:8px;
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--r-pill);
+    padding:0 12px; color:var(--text-faint); font-size:13px;
+  }
+  .cmdk kbd{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px;
+    background:rgba(255,255,255,0.07); border:1px solid var(--border);
+    padding:2px 6px; border-radius:5px; color:var(--text-dim);
+  }
+  .ticker{ display:flex; align-items:center; gap:16px; margin-left:8px; }
+  .ticker .stat{ display:flex; flex-direction:column; line-height:1.15; }
+  .ticker .stat .l{ font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); }
+  .ticker .stat .v{ font-size:13px; font-weight:600; }
+  .up{ color:var(--emerald); }
+  .health-ring{ display:flex; align-items:center; gap:7px; margin-left:6px; }
+  .health-ring .ring{ width:26px; height:26px; border-radius:50%;
+    background:conic-gradient(var(--emerald) 0 82%, rgba(255,255,255,0.08) 82% 100%);
+    display:flex; align-items:center; justify-content:center;
+    animation:ringspin 6s linear infinite; }
+  .health-ring .ring::after{ content:''; width:18px; height:18px; border-radius:50%; background:#0d0f14; }
+  @keyframes ringspin{ from{ filter:hue-rotate(0deg);} to{ filter:hue-rotate(0deg);} }
+  .hud-right{ margin-left:auto; display:flex; align-items:center; gap:14px; }
+  .toggle{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); }
+  .switch{ width:30px; height:17px; border-radius:99px; background:rgba(255,255,255,0.1); position:relative; border:1px solid var(--border); cursor:pointer; }
+  .switch::after{ content:''; position:absolute; width:13px; height:13px; border-radius:50%; background:var(--text-dim); top:1px; left:1px; transition:.2s var(--ease); }
+  .switch.on{ background:rgba(201,162,75,0.25); border-color:var(--gold); }
+  .switch.on::after{ left:15px; background:var(--gold); }
+  .avatar{ width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#2b2f38,#171a20); border:1px solid var(--border); }
+
+  /* ---------- Shell ---------- */
+  .shell{ flex:1; display:flex; min-height:0; position:relative; }
+  .minimap{
+    position:absolute; top:16px; left:16px; z-index:20;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    padding:8px 12px; font-size:11px; color:var(--text-dim); backdrop-filter:blur(16px);
+    display:flex; align-items:center; gap:8px;
+  }
+  .minimap .crumb{ cursor:pointer; }
+  .minimap .crumb.active{ color:var(--text); font-weight:600; }
+  .minimap .sep{ color:var(--text-faint); }
+
+  /* ---------- Signal HUD (readouts orbiting reactor) ---------- */
+  main#stage{ flex:1; position:relative; min-width:0; overflow:hidden; }
+
+  /* ---------- Campus view ---------- */
+  #campus-view{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; perspective:1400px; }
+  #campus-inner{ position:absolute; inset:0; transform-style:preserve-3d; transition:transform .55s var(--ease), filter .55s var(--ease), opacity .55s var(--ease); }
+  #campus-view.warp #campus-inner{ transform:scale(2.5) translateZ(0); filter:blur(10px) brightness(1.3); opacity:0; }
+  #campus-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .flow-path{ fill:none; stroke-width:1.3; opacity:0.5; }
+  .flow-path.risk{ stroke-width:1px; opacity:.35; }
+  .flow-particle{ filter:drop-shadow(0 0 4px currentColor); }
+
+  #node-layer{ position:relative; width:100%; height:100%; }
+  .node{
+    position:absolute; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    cursor:pointer; z-index:5; animation:rise .8s var(--ease) backwards;
+    will-change:transform;
+  }
+  .node .card{
+    width:112px; padding:12px 10px; border-radius:var(--r-card);
+    background:var(--panel); border:1px solid var(--border);
+    backdrop-filter:blur(18px); text-align:center; position:relative;
+    transition:transform .3s var(--ease-spring), border-color .28s, box-shadow .28s, background .28s;
+  }
+  .node .card::before{
+    content:''; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+    background:linear-gradient(135deg, var(--nc,var(--gold)), transparent 60%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    opacity:0; transition:opacity .3s;
+  }
+  .node:hover .card::before{ opacity:.55; }
+  .node:hover .card{
+    transform:translateY(-6px) scale(1.06);
+    background:var(--panel-strong);
+    box-shadow:0 16px 34px -10px rgba(0,0,0,0.55), 0 0 24px -6px var(--nc, rgba(255,255,255,.2));
+  }
+  .node .icon{
+    width:34px; height:34px; border-radius:10px; margin:0 auto 8px;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .node .name{ font-size:11.5px; font-weight:600; letter-spacing:-.01em; }
+  .node .metric{ font-size:10px; color:var(--text-dim); margin-top:3px; font-family:'JetBrains Mono',monospace; }
+
+  /* depth tiers */
+  .node.tier-1{ z-index:6; }
+  .node.tier-2{ z-index:4; }
+  .node.tier-2 .card{ opacity:.94; }
+  .node.tier-3{ z-index:3; }
+  .node.tier-3 .card{ opacity:.82; filter:saturate(.9); }
+
+  /* pulse broadcast — ripples out when JARVIS speaks */
+  .node .rippletag{ position:absolute; inset:-6px; border-radius:inherit; pointer-events:none; }
+  .campus-broadcast .node .card{ animation:noderecv .9s var(--ease) both; }
+  @keyframes noderecv{ 0%{ box-shadow:0 0 0 0 rgba(62,123,250,0);} 30%{ box-shadow:0 0 0 3px rgba(62,123,250,.35);} 100%{ box-shadow:0 0 0 0 rgba(62,123,250,0);} }
+
+  /* HQ reactor core */
+  .node.hq{ z-index:8; }
+  .node.hq .reactor-wrap{ position:relative; width:148px; height:148px; display:flex; align-items:center; justify-content:center; }
+  .node.hq .ring{ position:absolute; border-radius:50%; border:1px solid rgba(201,162,75,.28); }
+  .node.hq .ring.r1{ width:148px; height:148px; animation:spin 34s linear infinite; border-style:dashed; border-color:rgba(201,162,75,.22); }
+  .node.hq .ring.r2{ width:120px; height:120px; animation:spin 22s linear infinite reverse; border-color:rgba(62,123,250,.18); }
+  .node.hq .ring.r3{ width:96px; height:96px; background:conic-gradient(from 0deg, rgba(201,162,75,.35), transparent 30%, transparent 70%, rgba(201,162,75,.35)); animation:spin 10s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .node.hq .core{
+    position:relative; width:74px; height:74px; border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #fbe6b0, var(--gold) 45%, #6f5522 100%);
+    box-shadow:0 0 26px rgba(201,162,75,.55), 0 0 60px rgba(201,162,75,.25), inset 0 0 16px rgba(255,255,255,.25);
+    display:flex; align-items:center; justify-content:center; font-size:22px; color:#3a2c0d; font-weight:800;
+    animation:corepulse 3.4s ease-in-out infinite;
+  }
+  @keyframes corepulse{ 0%,100%{ box-shadow:0 0 26px rgba(201,162,75,.5), 0 0 60px rgba(201,162,75,.22), inset 0 0 16px rgba(255,255,255,.22); transform:scale(1);} 50%{ box-shadow:0 0 36px rgba(201,162,75,.75), 0 0 82px rgba(201,162,75,.35), inset 0 0 20px rgba(255,255,255,.32); transform:scale(1.035);} }
+  .node.hq .readout{
+    position:absolute; font-size:8.5px; font-family:'JetBrains Mono',monospace; color:var(--text-dim);
+    background:rgba(10,12,16,0.75); border:1px solid var(--border); border-radius:8px; padding:3px 6px;
+    backdrop-filter:blur(8px); white-space:nowrap; opacity:.9;
+  }
+  .node.hq .readout .v{ color:var(--text); font-weight:600; }
+  .node.hq .readout.r-health{ top:-4px; left:50%; transform:translateX(-50%); }
+  .node.hq .readout.r-mcap{ right:-50px; top:40%; }
+  .node.hq .readout.r-rev{ left:-50px; top:40%; }
+  .node.hq .readout.r-growth{ bottom:-2px; left:50%; transform:translateX(-50%); }
+  .node.hq .name{ font-size:13.5px; font-weight:700; margin-top:6px; }
+  .node.hq .metric{ font-size:10.5px; }
+
+  @keyframes rise{ from{ opacity:0; transform:translate(-50%,-38%);} to{ opacity:1; transform:translate(-50%,-50%);} }
+
+  /* ---------- Floating insight badges ---------- */
+  .insight{
+    position:absolute; transform:translate(-50%,-50%) scale(var(--gs,1)); z-index:7;
+    display:flex; align-items:center; gap:5px; padding:5px 10px 5px 8px; border-radius:999px;
+    background:rgba(10,12,16,.72); border:1px solid var(--border); backdrop-filter:blur(14px);
+    font-size:10.5px; font-weight:600; color:var(--text-dim); cursor:default;
+    animation:insightfloat 5.5s ease-in-out infinite, riseFade .8s var(--ease) backwards;
+    transition:transform .25s var(--ease), box-shadow .25s;
+  }
+  .insight:hover{ transform:translate(-50%,-50%) scale(calc(var(--gs,1) * 1.08)); box-shadow:0 8px 22px -8px rgba(0,0,0,.6); z-index:15; }
+  .insight .arrow{ font-size:11px; }
+  .insight.up{ color:var(--emerald); border-color:rgba(47,191,136,.35); }
+  .insight.down{ color:var(--crimson); border-color:rgba(229,72,77,.35); }
+  .insight.warn{ color:var(--amber); border-color:rgba(245,166,35,.35); }
+  .insight .tip{
+    position:absolute; top:130%; left:50%; transform:translateX(-50%) translateY(-4px); width:200px;
+    background:rgba(10,12,16,.95); border:1px solid var(--border); border-radius:10px; padding:9px 11px;
+    font-size:11px; font-weight:400; color:var(--text-dim); line-height:1.45; opacity:0; pointer-events:none;
+    transition:opacity .2s var(--ease), transform .2s var(--ease); backdrop-filter:blur(16px);
+  }
+  .insight:hover .tip{ opacity:1; transform:translateX(-50%) translateY(0); }
+  @keyframes insightfloat{ 0%,100%{ margin-top:0px; } 50%{ margin-top:-7px; } }
+  @keyframes riseFade{ from{ opacity:0; } to{ opacity:1; } }
+
+  /* particle burst on click */
+  .burst{ position:absolute; width:5px; height:5px; border-radius:50%; pointer-events:none; z-index:40; }
+
+  /* ---------- Dept view ---------- */
+  #dept-view{ position:absolute; inset:0; display:none; overflow-y:auto; padding:24px 28px 60px; }
+  #dept-view.show{ display:block; animation:fadein .35s var(--ease); }
+  @keyframes fadein{ from{opacity:0; transform:translateY(10px) scale(.99);} to{opacity:1; transform:translateY(0) scale(1);} }
+  .dept-header{ display:flex; align-items:flex-start; gap:14px; margin-bottom:20px; }
+  .back-btn{
+    background:var(--panel); border:1px solid var(--border); color:var(--text-dim);
+    width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:15px; flex:none; transition:.2s;
+  }
+  .back-btn:hover{ color:var(--text); border-color:rgba(255,255,255,.2); transform:translateX(-2px); }
+  .dept-title-block .eyebrow{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); margin-bottom:4px; }
+  .dept-title-block h2{ font-size:22px; font-weight:700; }
+  .dept-title-block .summary{ color:var(--text-dim); font-size:13px; margin-top:4px; max-width:640px; }
+  .fresh{ margin-left:auto; text-align:right; font-size:10.5px; color:var(--text-faint); }
+  .fresh .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:5px; box-shadow:0 0 6px var(--emerald); animation:blinkdot 2s infinite; }
+  @keyframes blinkdot{ 0%,100%{ opacity:1;} 50%{ opacity:.35;} }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+  .kpi{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-card); padding:14px 16px; transition:transform .25s var(--ease), border-color .25s; animation:fadein .4s var(--ease) backwards; }
+  .kpi:hover{ transform:translateY(-3px); border-color:rgba(255,255,255,.18); }
+  .kpi .l{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
+  .kpi .v{ font-size:20px; font-weight:700; margin-top:6px; font-family:'JetBrains Mono',monospace; }
+  .kpi .d{ font-size:11px; margin-top:3px; }
+
+  .grid-2{ display:grid; grid-template-columns:1.5fr 1fr; gap:16px; align-items:start; }
+  .panel{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-card); padding:18px 18px 16px; animation:fadein .45s var(--ease) backwards; }
+  .panel h3{ font-size:13px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .panel h3 .tag{ margin-left:auto; font-size:10px; font-weight:500; color:var(--text-faint); background:rgba(255,255,255,.05); padding:3px 8px; border-radius:99px; }
+
+  .bars{ display:flex; align-items:flex-end; gap:10px; height:180px; padding-top:10px; }
+  .bar{ flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .bar .stem{ width:100%; border-radius:6px 6px 3px 3px; position:relative; transition:height .8s var(--ease); }
+  .bar .val{ font-size:10.5px; font-family:'JetBrains Mono',monospace; color:var(--text-dim); }
+  .bar .lbl{ font-size:9.5px; color:var(--text-faint); text-align:center; }
+
+  .list-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:12.5px; }
+  .list-row:last-child{ border-bottom:none; }
+  .list-row .label{ flex:1; color:var(--text-dim); }
+  .list-row .track{ width:120px; height:6px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; }
+  .list-row .fill{ height:100%; border-radius:99px; transition:width 1s var(--ease); }
+  .list-row .num{ width:52px; text-align:right; }
+
+  .datadrawer{ margin-top:16px; }
+  .datadrawer table{ width:100%; border-collapse:collapse; font-size:12px; }
+  .datadrawer th{ text-align:left; color:var(--text-faint); font-weight:500; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid var(--border); }
+  .datadrawer td{ padding:9px 10px; border-bottom:1px solid rgba(255,255,255,.04); font-family:'JetBrains Mono',monospace; }
+  .datadrawer tr:hover td{ background:rgba(255,255,255,.02); }
+  .pill{ display:inline-block; padding:2px 9px; border-radius:99px; font-size:10.5px; font-weight:600; }
+
+  /* ---------- Dock ---------- */
+  .dock{
+    flex:none; height:60px; display:flex; align-items:center; gap:6px;
+    padding:0 16px; overflow-x:auto; border-top:1px solid var(--border);
+    background:rgba(7,8,11,0.72); backdrop-filter:blur(20px); z-index:30; position:relative;
+  }
+  .dock-item{
+    flex:none; display:flex; align-items:center; gap:7px;
+    padding:8px 12px; border-radius:11px; border:1px solid transparent;
+    color:var(--text-dim); font-size:12px; font-weight:500; transition:.18s var(--ease);
+    background:transparent;
+  }
+  .dock-item:hover{ background:var(--panel); border-color:var(--border); color:var(--text); transform:translateY(-2px); }
+  .dock-item.active{ background:rgba(201,162,75,0.1); border-color:rgba(201,162,75,.35); color:var(--gold); }
+  .dock-item .dot{ width:7px; height:7px; border-radius:50%; }
+
+  /* ---------- JARVIS panel ---------- */
+  .jarvis{
+    width:320px; flex:none; border-left:1px solid var(--border);
+    background:rgba(7,8,11,0.6); backdrop-filter:blur(20px);
+    display:flex; flex-direction:column; transition:width .3s var(--ease), opacity .3s;
+    z-index:25;
+  }
+  .jarvis.collapsed{ width:0; overflow:hidden; opacity:0; }
+
+  .jarvis-reopen{
+    position:absolute; right:18px; top:18px; z-index:26;
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(10,12,16,.8); border:1px solid var(--border); backdrop-filter:blur(16px);
+    display:none; align-items:center; justify-content:center;
+    box-shadow:0 10px 26px -10px rgba(0,0,0,.65);
+    transition:transform .2s var(--ease-spring), border-color .2s;
+  }
+  .jarvis-reopen.show{ display:flex; }
+  .jarvis-reopen:hover{ transform:scale(1.08); border-color:rgba(62,123,250,.5); }
+  .jarvis-reopen .orb{ width:22px; height:22px; }
+  .jarvis-head{ padding:16px 16px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex:none; }
+
+  .orb-wrap{ position:relative; width:34px; height:34px; flex:none; }
+  .orb-wrap .ring{ position:absolute; inset:-4px; border-radius:50%; border:1px solid rgba(62,123,250,.3); opacity:0; transition:opacity .3s; }
+  .orb{
+    width:34px; height:34px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #a9c6ff, #3E7BFA 55%, #142a63);
+    box-shadow:0 0 18px rgba(62,123,250,0.55);
+    animation:pulse 2.6s ease-in-out infinite;
+    position:relative;
+  }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 12px rgba(62,123,250,.4); transform:scale(1);} 50%{ box-shadow:0 0 24px rgba(62,123,250,.8); transform:scale(1.04);} }
+  .orb-wrap.thinking .orb{ animation:think .9s linear infinite; background:radial-gradient(circle at 35% 30%, #d9c9ff, var(--violet) 55%, #2b1f57); box-shadow:0 0 22px rgba(139,124,246,.7); }
+  @keyframes think{ 0%{ filter:hue-rotate(0deg) brightness(1);} 50%{ filter:hue-rotate(25deg) brightness(1.2);} 100%{ filter:hue-rotate(0deg) brightness(1);} }
+  .orb-wrap.thinking .ring{ opacity:1; animation:spin 1.1s linear infinite; border-style:dashed; border-color:rgba(139,124,246,.6); }
+  .orb-wrap.speaking .orb{ animation:speak .5s ease-in-out infinite; }
+  @keyframes speak{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.12);} }
+  .orb-wrap.speaking .ring{ opacity:1; animation:speakring 1s ease-out infinite; border-color:rgba(62,123,250,.5); }
+  @keyframes speakring{ 0%{ inset:-2px; opacity:.9;} 100%{ inset:-12px; opacity:0;} }
+
+  .jarvis-head .jname{ font-weight:700; font-size:13.5px; }
+  .jarvis-head .jstat{ font-size:10.5px; color:var(--emerald); }
+  .jarvis-collapse{ margin-left:auto; color:var(--text-faint); font-size:16px; }
+
+  .jarvis-body{ flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+  .msg{ font-size:12.5px; line-height:1.5; max-width:100%; animation:fadein .3s var(--ease); }
+  .msg.ai{ color:var(--text); background:var(--panel); border:1px solid var(--border); padding:10px 12px; border-radius:12px 12px 12px 4px; }
+  .msg.user{ color:#0A0C10; background:var(--gold); padding:9px 12px; border-radius:12px 12px 4px 12px; align-self:flex-end; font-weight:600; }
+  .msg .cite{ display:block; margin-top:6px; font-size:10px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+  .typing{ display:flex; gap:4px; padding:10px 12px; background:var(--panel); border:1px solid var(--border); border-radius:12px; width:fit-content; }
+  .typing span{ width:5px; height:5px; border-radius:50%; background:var(--violet); animation:blink 1.1s infinite; }
+  .typing span:nth-child(2){ animation-delay:.15s; } .typing span:nth-child(3){ animation-delay:.3s; }
+  @keyframes blink{ 0%,80%,100%{ opacity:.25; } 40%{ opacity:1; } }
+
+  .suggested{ padding:10px 16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:6px; flex:none; }
+  .suggested .stitle{ font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin-bottom:2px; }
+  .chip{ text-align:left; font-size:11.5px; color:var(--text-dim); background:var(--panel); border:1px solid var(--border); padding:8px 10px; border-radius:10px; transition:.15s; }
+  .chip:hover{ color:var(--text); border-color:rgba(201,162,75,.4); background:rgba(201,162,75,.06); transform:translateX(2px); }
+
+  .jarvis-input{ display:flex; gap:8px; padding:12px 16px 16px; flex:none; }
+  .jarvis-input input{
+    flex:1; background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:9px 12px; color:var(--text); font-size:12.5px; font-family:inherit;
+  }
+  .jarvis-input input:focus{ outline:none; border-color:rgba(201,162,75,.5); box-shadow:0 0 0 3px rgba(201,162,75,.12); }
+  .jarvis-input button{ background:var(--gold); color:#0A0C10; border:none; border-radius:10px; padding:0 14px; font-weight:700; font-size:12.5px; transition:transform .15s var(--ease-spring); }
+  .jarvis-input button:hover{ transform:translateY(-1px); }
+  .jarvis-input button:active{ transform:translateY(0) scale(.96); }
+
+  .reduced-motion .node, .reduced-motion .flow-particle, .reduced-motion .orb, .reduced-motion .ring, .reduced-motion .core, .reduced-motion .insight{ animation:none !important; }
+  .reduced-motion *{ transition-duration:0.01s !important; }
+  .reduced-motion #bg-canvas{ opacity:.4; }
+
+  @media (max-width:1100px){
+    .jarvis{ position:absolute; right:0; top:0; bottom:0; }
+    .grid-2{ grid-template-columns:1fr; }
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div id="bg-fog"></div>
+
+<div id="app">
+
+  <header class="hud">
+    <div class="brand"><div class="mark">LT</div>Digital Twin <span class="sub">/ Larsen &amp; Toubro — Living Company</span></div>
+    <div class="cmdk">Search companies, ask AI, jump anywhere… <kbd>⌘K</kbd></div>
+    <div class="ticker">
+      <div class="stat"><span class="l">LT · NSE</span><span class="v num">₹3,842.10</span></div>
+      <div class="stat"><span class="l">Change</span><span class="v num up">+1.2%</span></div>
+      <div class="stat"><span class="l">Order Book</span><span class="v num">₹5.4L Cr</span></div>
+    </div>
+    <div class="health-ring"><div class="ring"></div><div class="stat"><span class="l">AI Health</span><span class="v num">82/100</span></div></div>
+    <div class="hud-right">
+      <div class="toggle">Reduced motion <div class="switch" id="motionToggle" onclick="toggleMotion()"></div></div>
+      <div class="avatar"></div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <div class="minimap" id="minimap">
+      <span class="crumb active" data-dept="">Campus</span>
+    </div>
+
+    <main id="stage">
+      <section id="campus-view">
+        <div id="campus-inner">
+          <svg id="campus-svg"></svg>
+          <div id="node-layer"></div>
+        </div>
+      </section>
+
+      <section id="dept-view"></section>
+    </main>
+
+    <aside class="jarvis" id="jarvisPanel">
+      <div class="jarvis-head">
+        <div class="orb-wrap" id="orbWrap"><div class="ring"></div><div class="orb"></div></div>
+        <div>
+          <div class="jname">JARVIS</div>
+          <div class="jstat">● grounded to L&amp;T FY26 filings</div>
+        </div>
+        <button class="jarvis-collapse" onclick="toggleJarvis()">–</button>
+      </div>
+      <div class="jarvis-body" id="jarvisBody"></div>
+      <div class="suggested" id="suggested"></div>
+      <div class="jarvis-input">
+        <input id="jarvisInput" type="text" placeholder="Ask JARVIS about L&T…" onkeydown="if(event.key==='Enter')sendQuery()">
+        <button onclick="sendQuery()">Ask</button>
+      </div>
+    </aside>
+
+    <button class="jarvis-reopen" id="jarvisReopen" onclick="toggleJarvis()" title="Open JARVIS"><div class="orb"></div></button>
+  </div>
+
+  <nav class="dock" id="dock"></nav>
+</div>
+
+<script>
+/* =========================================================
+   BACKGROUND ENGINE — blueprint grid + drifting particles
+   + faint neural constellation + parallax on mouse
+========================================================= */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W,H, mx=0, my=0, tmx=0, tmy=0;
+  const PARTICLES = [];
+  const N = 70;
+
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+
+  for(let i=0;i<N;i++){
+    PARTICLES.push({ x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+      vy:-(0.06+Math.random()*0.18), vx:(Math.random()-0.5)*0.05, r:Math.random()*1.6+0.4,
+      a:Math.random()*0.5+0.15 });
+  }
+
+  window.addEventListener('mousemove', e=>{ tmx = (e.clientX/window.innerWidth-0.5); tmy=(e.clientY/window.innerHeight-0.5); });
+
+  function grid(offX, offY){
+    const step = 64;
+    ctx.strokeStyle = 'rgba(255,255,255,0.028)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let x = -step + (offX % step); x < W+step; x+=step){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+    for(let y = -step + (offY % step); y < H+step; y+=step){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
+    ctx.stroke();
+  }
+
+  function frame(){
+    mx += (tmx-mx)*0.04; my += (tmy-my)*0.04;
+    ctx.clearRect(0,0,W,H);
+    grid(mx*30, my*30);
+
+    // particles + constellation links
+    ctx.save();
+    for(const p of PARTICLES){
+      p.y += p.vy; p.x += p.vx + mx*0.15;
+      if(p.y < -10) p.y = H+10;
+      if(p.x < -10) p.x = W+10; if(p.x > W+10) p.x = -10;
+    }
+    for(let i=0;i<PARTICLES.length;i++){
+      for(let j=i+1;j<PARTICLES.length;j++){
+        const a=PARTICLES[i], b=PARTICLES[j];
+        const d = Math.hypot(a.x-b.x, a.y-b.y);
+        if(d < 130){
+          ctx.strokeStyle = `rgba(139,124,246,${0.06*(1-d/130)})`;
+          ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    for(const p of PARTICLES){
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(201,162,75,${p.a*0.5})`;
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* =========================================================
+   DEPARTMENT DATA
+========================================================= */
+const DEPARTMENTS = [
+  { id:'hq', name:'Headquarters', icon:'⌂', color:'var(--gold)', metric:'FY26 Rev ₹2.6L Cr', angle:-90, tier:0, hq:true,
+    summary:'Consolidated snapshot, leadership, ownership structure and long-term price performance.',
+    kpis:[['Market Cap','₹5.2L Cr',''],['Promoter Hold.','~32.9%',''],['5Y Price CAGR','+24%','up'],['Subsidiaries','6 major','']],
+    chart:{type:'bars', title:'Revenue Mix by Segment (FY26, illustrative)', data:[
+      ['Infra',34,'var(--gold)'],['Energy',18,'var(--blue)'],['Hydrocarbon',12,'var(--emerald)'],
+      ['IT & Tech',19,'var(--violet)'],['Fin. Services',9,'var(--amber)'],['Other',8,'var(--text-faint)']]},
+    list:{title:'Shareholding Pattern', rows:[['Promoter',32.9,'var(--gold)'],['FII',18.4,'var(--blue)'],['DII',26.1,'var(--emerald)'],['Public & Others',22.6,'var(--text-dim)']]},
+    table:{cols:['Executive','Role','Tenure'], rows:[['S N Subrahmanyan','CMD','4 yrs'],['R Shankar Raman','Whole-time Director','12 yrs'],['A M Naik','Chairman Emeritus','22 yrs']]},
+    questions:['Summarize L&T in three sentences','How concentrated is the shareholding?','What changed vs last quarter?']
+  },
+  { id:'board', name:'Board Room', icon:'▤', color:'var(--violet)', metric:'11 Directors', angle:-64, tier:2, flow:'capital',
+    summary:'Governance composition, related-party exposure and voting history on key resolutions.',
+    kpis:[['Independent Dir.','7 of 11',''],['Avg. Attendance','94%','up'],['RPT Value','₹1,240 Cr',''],['Governance Score','A','up']],
+    chart:{type:'bars', title:'Board Composition', data:[['Independent',64,'var(--violet)'],['Executive',18,'var(--gold)'],['Non-Exec',18,'var(--text-dim)']]},
+    list:{title:'Recent Resolutions — Approval Rate', rows:[['Dividend Declaration',99.2,'var(--emerald)'],['Director Reappointment',97.8,'var(--emerald)'],['ESOP Scheme',88.4,'var(--amber)']]},
+    table:{cols:['Resolution','Date','Outcome'], rows:[['Final Dividend FY25','Aug 2025','Passed'],['Related Party Ratification','Aug 2025','Passed'],['Auditor Reappointment','Aug 2024','Passed']]},
+    questions:['Any governance red flags?','How does board independence compare to peers?']
+  },
+  { id:'finance', name:'Finance', icon:'₹', color:'var(--gold)', metric:'PAT ₹15,200 Cr', angle:-36, tier:1, flow:'cash',
+    summary:'Consolidated P&L bridge, balance sheet strength and 5-year ratio trends.',
+    kpis:[['Revenue TTM','₹2.62L Cr','+16.4%'],['EBITDA Margin','12.1%','+0.6pp'],['ROE','15.8%','up'],['Net D/E','0.42x','healthy']],
+    chart:{type:'bars', title:'P&L Waterfall — FY26 (₹ Cr, illustrative)', data:[
+      ['Revenue',262000,'var(--gold)'],['EBITDA',31700,'var(--blue)'],['EBIT',24800,'var(--emerald)'],['PAT',15200,'var(--amber)']], scale:true},
+    list:{title:'5-Yr Ratio Trend', rows:[['ROCE',18.2,'var(--emerald)'],['ROE',15.8,'var(--emerald)'],['Interest Coverage',6.4,'var(--blue)'],['Working Cap. Days',112,'var(--amber)']]},
+    table:{cols:['Segment','Revenue ₹Cr','EBIT Margin'], rows:[['Infrastructure','89,000','8.1%'],['Energy','47,200','11.4%'],['Hydrocarbon','31,400','9.8%'],['IT & Tech Services','49,700','24.2%'],['Financial Services','23,100','—']]},
+    questions:['Explain the margin trend in plain English','Any red flags in receivables?','Show ROE vs ROCE over 5 years']
+  },
+  { id:'factory', name:'Factory', icon:'⚙', color:'var(--blue)', metric:'Util. 78%', angle:-8, tier:1, flow:'supply',
+    summary:'Heavy Engineering capacity, plant utilization and defence order execution timeline.',
+    kpis:[['Capacity Util.','78%','up'],['Capex TTM','₹8,900 Cr',''],['Plants','Hazira · Powai · Kansbahal',''],['Defence Backlog','₹42,000 Cr','']],
+    chart:{type:'bars', title:'Plant Utilization', data:[['Hazira',82,'var(--blue)'],['Powai',71,'var(--blue)'],['Kansbahal',76,'var(--blue)']]},
+    list:{title:'Defence Programme Progress', rows:[['K9 Vajra Deliveries',88,'var(--emerald)'],['Submarine Programme',41,'var(--amber)'],['Missile Systems',63,'var(--blue)']]},
+    table:{cols:['Programme','Status','Est. Completion'], rows:[['K9 Vajra Howitzer','On track','Q3 FY27'],['P75I Submarine','In progress','FY29'],['Precision Munitions','On track','Q1 FY27']]},
+    questions:['Is capex outpacing depreciation?','What is defence order execution risk?']
+  },
+  { id:'supply', name:'Supply Chain', icon:'⛓', color:'var(--emerald)', metric:'420+ Vendors', angle:20, tier:1, flow:'supply',
+    summary:'Vendor concentration, commodity exposure and live margin sensitivity to input costs.',
+    kpis:[['Top-10 Vendor Conc.','24%',''],['Steel Price Sens.','−0.8% margin / 10%↑',''],['Active Sites','340+',''],['On-time Delivery','91%','up']],
+    chart:{type:'bars', title:'Raw Material Cost Exposure', data:[['Steel',38,'var(--emerald)'],['Cement',21,'var(--emerald)'],['Copper',14,'var(--emerald)'],['Other',27,'var(--text-dim)']]},
+    list:{title:'Vendor Concentration', rows:[['Top 10 Vendors',24,'var(--emerald)'],['Next 40 Vendors',31,'var(--blue)'],['Remaining 370+',45,'var(--text-dim)']]},
+    table:{cols:['Site Region','Active Projects','Risk Flag'], rows:[['Western India','62','Low'],['Middle East','48','Watch — FX'],['Southern India','55','Low']]},
+    questions:['Simulate a 10% steel price increase','Which region has highest supply risk?']
+  },
+  { id:'sales', name:'Sales', icon:'▲', color:'var(--emerald)', metric:'Inflow +18% QoQ', angle:48, tier:1, flow:'customer',
+    summary:'Order backlog waterfall, inflow by geography and live bid pipeline.',
+    kpis:[['Order Book','₹5.4L Cr','+9% YoY'],['Order Inflow QoQ','+18%','up'],['Book-to-Bill','2.1x','healthy'],['Bid Pipeline','₹8.1L Cr','']],
+    chart:{type:'bars', title:'Order Book Waterfall (₹ '+"'"+'000 Cr)', data:[
+      ['Opening',498,'var(--text-dim)'],['+ Inflow',96,'var(--emerald)'],['− Execution',(-54),'var(--crimson)'],['Closing',540,'var(--gold)']], signed:true},
+    list:{title:'Order Inflow by Geography', rows:[['India',58,'var(--emerald)'],['Middle East',27,'var(--amber)'],['Africa',9,'var(--blue)'],['Others',6,'var(--text-dim)']]},
+    table:{cols:['Segment','Order Book ₹Cr','QoQ Δ'], rows:[['Buildings & Factories','142,000','+6%'],['Transport Infra','118,000','+11%'],['Power & Hydrocarbon','96,000','+22%'],['Water & Effluent','54,000','+4%']]},
+    questions:['Why did Middle East inflow rise?','What is the book-to-bill trend?','Compare to FY22 order book mix']
+  },
+  { id:'marketing', name:'Marketing', icon:'◈', color:'var(--amber)', metric:'Win Rate 34%', angle:76, tier:2, flow:'info',
+    summary:'Brand share-of-voice, tender win-rate and segment-wise market share vs named peers.',
+    kpis:[['Tender Win Rate','34%','+3pp'],['Share of Voice','Leader',''],['Segments Led','4 of 6',''],['Brand Score','8.6/10','']],
+    chart:{type:'bars', title:'Market Share by Segment', data:[['Infra EPC',28,'var(--amber)'],['Hydrocarbon',19,'var(--amber)'],['Defence',22,'var(--amber)']]},
+    list:{title:'Tender Win Rate Trend', rows:[['FY24',29,'var(--text-dim)'],['FY25',31,'var(--blue)'],['FY26',34,'var(--emerald)']]},
+    table:{cols:['Segment','Market Position','Nearest Peer'], rows:[['Infra EPC','#1','Adani Enterprises'],['Hydrocarbon EPC','#1','—'],['Metro Rail','#2','Afcons']]},
+    questions:['Where is L&T losing tenders?']
+  },
+  { id:'rnd', name:'R&D', icon:'✺', color:'var(--violet)', metric:'412 Patents', angle:104, tier:3, flow:'info',
+    summary:'Patent filings, LTTS engineering R&D intensity and defence indigenisation milestones.',
+    kpis:[['Patents Filed','412','+38 YoY'],['R&D Spend / IT Rev.','9.2%',''],['Indigenisation','71%','up'],['Digital Offerings','26 platforms','']],
+    chart:{type:'bars', title:'Patent Filings Trend', data:[['FY23',68,'var(--violet)'],['FY24',81,'var(--violet)'],['FY25',94,'var(--violet)'],['FY26',112,'var(--violet)']]},
+    list:{title:'Indigenisation Progress', rows:[['Defence Systems',71,'var(--emerald)'],['Precision Components',58,'var(--blue)']]},
+    table:{cols:['Programme','Focus Area','Status'], rows:[['LTTS EV Platform','Mobility','Active'],['AI Manufacturing Suite','Industry 4.0','Active']]},
+    questions:['How does R&D intensity compare to Siemens India?']
+  },
+  { id:'hr', name:'HR', icon:'⬡', color:'var(--blue)', metric:'Attrition 14.2%', angle:132, tier:2, flow:'info',
+    summary:'Headcount trend, IT-services attrition and utilization — a key margin proxy.',
+    kpis:[['Headcount','~2,50,000',''],['Attrition (IT)','14.2%','improving'],['Utilization','83%','up'],['Employee Cost / Rev.','21%','']],
+    chart:{type:'bars', title:'Attrition Trend (LTIMindtree)', data:[['FY24',19.8,'var(--crimson)'],['FY25',16.5,'var(--amber)'],['FY26',14.2,'var(--emerald)']]},
+    list:{title:'Headcount by Segment', rows:[['IT & Tech Services',44,'var(--blue)'],['Engineering & Infra',39,'var(--gold)'],['Other',17,'var(--text-dim)']]},
+    table:{cols:['Metric','FY25','FY26'], rows:[['Utilization','80%','83%'],['Attrition','16.5%','14.2%']]},
+    questions:['Is falling attrition margin-accretive?']
+  },
+  { id:'ir', name:'Investor Relations', icon:'◎', color:'var(--gold)', metric:'Guidance: On Track', angle:160, tier:1, flow:'capital',
+    summary:'Concall sentiment timeline, the management guidance tracker and analyst estimate dispersion.',
+    kpis:[['Guidance Delivered','5 of 6 qtrs',''],['Concall Sentiment','Constructive','up'],['Consensus Target','₹4,120',''],['Analysts Covering','38','']],
+    chart:{type:'bars', title:'Guidance Tracker — Promised vs Delivered (Revenue Growth %)', data:[
+      ['Q2 FY26 P',15,'var(--text-dim)'],['Q2 FY26 D',16.4,'var(--emerald)'],['Q3 FY26 P',14,'var(--text-dim)'],['Q3 FY26 D',13.1,'var(--amber)']]},
+    list:{title:'Analyst Rating Split', rows:[['Buy',61,'var(--emerald)'],['Hold',31,'var(--amber)'],['Sell',8,'var(--crimson)']]},
+    table:{cols:['Quarter','Guided','Delivered','Verdict'], rows:[['Q1 FY26','+14%','+16.4%','Beat'],['Q2 FY26','+15%','+16.1%','Beat'],['Q3 FY26','+14%','+13.1%','Miss']]},
+    questions:['Has management missed guidance recently?','Summarize the last earnings call tone']
+  },
+  { id:'global', name:'Global Operations', icon:'⊕', color:'var(--blue)', metric:'27 Countries', angle:-172, tier:2, flow:'cash',
+    summary:"Geography-weighted revenue exposure and FX risk across L&T's international footprint.",
+    kpis:[['Intl. Revenue Share','32%',''],['Middle East Exposure','19% of order book','watch'],['Currencies Active','9',''],['FX Hedge Ratio','68%','']],
+    chart:{type:'bars', title:'Revenue by Geography', data:[['India',68,'var(--blue)'],['Middle East',19,'var(--amber)'],['Africa',7,'var(--emerald)'],['Others',6,'var(--text-dim)']]},
+    list:{title:'FX Exposure by Currency', rows:[['USD',44,'var(--blue)'],['AED/SAR',31,'var(--amber)'],['EUR',12,'var(--emerald)'],['Other',13,'var(--text-dim)']]},
+    table:{cols:['Region','Order Book Share','Geopolitical Flag'], rows:[['Middle East','19%','Moderate'],['Africa','7%','Moderate'],['SE Asia','4%','Low']]},
+    questions:['How exposed is L&T to a Middle East slowdown?']
+  },
+  { id:'risk', name:'Risk Center', icon:'⚠', color:'var(--crimson)', metric:'2 Flags Active', angle:-144, tier:2, flow:'risk',
+    summary:'Composite risk radar spanning working capital, FX, litigation and customer concentration.',
+    kpis:[['Composite Risk','Moderate',''],['Receivables Days','98','watch'],['Covenant Headroom','2.3x min.','healthy'],['Active Litigation','₹3,100 Cr exposure','']],
+    chart:{type:'bars', title:'Risk Radar (0–100, higher = more risk)', data:[
+      ['Working Capital',58,'var(--amber)'],['FX',44,'var(--blue)'],['Geopolitical',51,'var(--amber)'],['Litigation',29,'var(--emerald)'],['Concentration',36,'var(--emerald)']]},
+    list:{title:'Receivables Aging', rows:[['0-90 days',62,'var(--emerald)'],['91-180 days',24,'var(--amber)'],['180+ days',14,'var(--crimson)']]},
+    table:{cols:['Risk Item','Materiality','Trend'], rows:[['Middle East receivables','High','Watch'],['Steel price volatility','Medium','Stable'],['Litigation — tax disputes','Medium','Improving']]},
+    questions:['What is driving the working capital flag?','Explain covenant headroom simply']
+  },
+  { id:'esg', name:'ESG', icon:'❋', color:'var(--emerald)', metric:'LTIFR 0.18', angle:-116, tier:3, flow:'info',
+    summary:'Emissions trajectory against net-zero target, safety record and governance scoring.',
+    kpis:[['LTIFR (Safety)','0.18','improving'],['Scope 1+2 Emissions','−12% YoY','up'],['Women in Workforce','12.4%','up'],['ESG Rating','AA','']],
+    chart:{type:'bars', title:'Scope 1+2 Emissions Trend (Index, FY23=100)', data:[['FY23',100,'var(--emerald)'],['FY24',94,'var(--emerald)'],['FY25',89,'var(--emerald)'],['FY26',82,'var(--emerald)']]},
+    list:{title:'Safety — LTIFR Trend', rows:[['FY24',0.26,'var(--amber)'],['FY25',0.22,'var(--emerald)'],['FY26',0.18,'var(--emerald)']]},
+    table:{cols:['Metric','Target','FY26 Actual'], rows:[['Net Zero','2040','On track'],['Women Workforce','15% by FY28','12.4%']]},
+    questions:['Is L&T on track for net zero?']
+  },
+  { id:'competitor', name:'Competitor Intel', icon:'⌬', color:'var(--violet)', metric:'vs 6 peers', angle:-88+180, tier:3, flow:'info',
+    summary:'Side-by-side peer benchmarking across order book, margins and valuation.',
+    kpis:[['P/E vs Peers','28.4x (peer avg 31x)','discount'],['EV/EBITDA','16.2x',''],['Margin vs Peers','Above avg','up'],['Order Book Rank','#1',''] ],
+    chart:{type:'bars', title:'EBITDA Margin — L&T vs Peers (%)', data:[['L&T',12.1,'var(--gold)'],['Adani Ent.',10.4,'var(--text-dim)'],['GMR Infra',9.8,'var(--text-dim)'],['Siemens Ind.',13.9,'var(--text-dim)'],['KEC Intl.',7.2,'var(--text-dim)']]},
+    list:{title:'Valuation vs Peers (P/E)', rows:[['L&T',28.4,'var(--gold)'],['Siemens India',34.1,'var(--violet)'],['ABB India',52.3,'var(--violet)'],['KEC International',22.6,'var(--blue)']]},
+    table:{cols:['Peer','Order Book ₹Cr','P/E'], rows:[['L&T','5,40,000','28.4x'],['Adani Enterprises','—','41.2x'],['Siemens India','—','34.1x'],['KEC International','38,200','22.6x']]},
+    questions:['Is L&T undervalued vs peers?','Overlay Adani Enterprises campus for comparison']
+  },
+];
+
+const genericAnswers = [
+  "That figure isn't in the panels you've visited yet — want me to pull it from the FY26 annual report?",
+  "Based on the segment data currently open, here's the grounded read:",
+  "I can generate a full Investment Thesis from what you've explored this session — say the word."
+];
+
+/* Flow conduit visual styles, one per flow archetype from the brief */
+const FLOW_STYLES = {
+  cash:     { color:'var(--gold)',    dash:'none',    shape:'circle', speed:1.0 },
+  info:     { color:'var(--blue)',    dash:'2,5',     shape:'square', speed:1.35 },
+  supply:   { color:'var(--emerald)', dash:'6,4',     shape:'hex',    speed:0.75 },
+  customer: { color:'#5fd0a8',        dash:'none',    shape:'circle', speed:1.15 },
+  capital:  { color:'var(--amber)',   dash:'1,4',     shape:'diamond',speed:0.9 },
+  risk:     { color:'var(--crimson)', dash:'3,3',     shape:'none',   speed:0 }
+};
+
+/* Floating insights, positioned relative to relevant department nodes */
+const INSIGHTS = [
+  { near:'sales', dir:'up', label:'Order Wins', detail:'Order inflow up 18% QoQ, led by Hydrocarbon EPC wins in the Middle East — book-to-bill now 2.1x.' },
+  { near:'risk', dir:'warn', label:'Margin Pressure', detail:'Middle East receivables aged 180+ days rose to 14% of the book, from 9% a year ago.' },
+  { near:'supply', dir:'warn', label:'Supply Risk', detail:'A 10% steel price increase compresses margin by roughly 0.8 percentage points.' },
+  { near:'ir', dir:'up', label:'Institutional Buying', detail:'FII + DII holding is 44.5% combined, with DII share rising over the last two quarters.' },
+];
+
+/* =========================================================
+   CAMPUS RENDER — tiered depth layout + typed conduits
+========================================================= */
+const nodeLayer = document.getElementById('node-layer');
+const svg = document.getElementById('campus-svg');
+const insightLayer = document.createElement('div');
+insightLayer.id = 'insight-layer';
+insightLayer.style.cssText = 'position:absolute; inset:0; pointer-events:none;';
+document.getElementById('campus-inner').appendChild(insightLayer);
+
+let W, H, CX, CY, R, GS;
+const TIER_RADIUS = { 1:0.78, 2:1.08, 3:1.32 };
+const TIER_SCALE  = { 0:1.06, 1:1, 2:0.88, 3:0.76 };
+
+function flowShapeMarkup(shape, color){
+  if(shape==='square') return `<rect x="-2.6" y="-2.6" width="5.2" height="5.2" fill="${color}"/>`;
+  if(shape==='hex') return `<polygon points="0,-3.2 2.8,-1.6 2.8,1.6 0,3.2 -2.8,1.6 -2.8,-1.6" fill="${color}"/>`;
+  if(shape==='diamond') return `<polygon points="0,-3.4 3.4,0 0,3.4 -3.4,0" fill="${color}"/>`;
+  return `<circle r="2.6" fill="${color}"/>`;
+}
+
+function layoutCampus(){
+  W = nodeLayer.clientWidth; H = nodeLayer.clientHeight;
+  CX = W/2; CY = H/2 + 8; R = Math.min(W,H)*0.40;
+  GS = Math.max(0.5, Math.min(1.08, Math.min(W,H)/840));
+  nodeLayer.innerHTML=''; svg.innerHTML=''; insightLayer.innerHTML='';
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+  DEPARTMENTS.forEach(d=>{
+    let x,y;
+    if(d.hq){ x=CX; y=CY; } else {
+      const rad = d.angle*Math.PI/180;
+      const rMul = TIER_RADIUS[d.tier] || 1;
+      x = CX + R*rMul*Math.cos(rad);
+      y = CY + R*rMul*Math.sin(rad)*0.68;
+    }
+    d._x=x; d._y=y;
+
+    const el = document.createElement('div');
+    el.className = 'node' + (d.hq?' hq':'') + (d.tier ? ' tier-'+d.tier : '');
+    const s = (TIER_SCALE[d.tier||0]||1) * GS;
+    el.style.left=x+'px'; el.style.top=y+'px';
+    el.style.setProperty('--nc', d.color);
+    el.style.transform = `translate(-50%,-50%) scale(${s})`;
+    el.style.animationDelay=(Math.random()*0.35)+'s';
+
+    if(d.hq){
+      el.innerHTML = `
+        <div class="reactor-wrap">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="core">LT</div>
+          <div class="readout r-health">HEALTH <span class="v">82</span></div>
+          <div class="readout r-mcap">MCAP <span class="v">₹5.2L Cr</span></div>
+          <div class="readout r-rev">REV <span class="v">₹2.6L Cr</span></div>
+          <div class="readout r-growth">GROWTH <span class="v">+16.4%</span></div>
+        </div>
+        <div class="name">${d.name}</div>
+        <div class="metric">AI Confidence 91% · Live</div>`;
+    } else {
+      el.innerHTML = `<div class="card">
+          <div class="icon" style="background:color-mix(in srgb, ${d.color} 18%, transparent); color:${d.color}; border:1px solid color-mix(in srgb, ${d.color} 35%, transparent)">${d.icon}</div>
+          <div class="name">${d.name}</div>
+          <div class="metric">${d.metric}</div>
+        </div>`;
+    }
+    el.onclick = (ev)=>{ spawnBurst(ev.clientX, ev.clientY, d.color); flyToDept(d.id); };
+    attachMagnetic(el);
+    nodeLayer.appendChild(el);
+
+    if(!d.hq){
+      const hq = DEPARTMENTS.find(x=>x.hq);
+      const fs = FLOW_STYLES[d.flow] || FLOW_STYLES.info;
+      const dpath = `M ${hq._x||CX} ${hq._y||CY} Q ${(x+CX)/2} ${(y+CY)/2 - 30} ${x} ${y}`;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', dpath);
+      path.setAttribute('class','flow-path'+(d.flow==='risk'?' risk':''));
+      path.setAttribute('stroke', fs.color);
+      path.setAttribute('stroke-dasharray', fs.dash);
+      path.setAttribute('id','path-'+d.id);
+      svg.appendChild(path);
+
+      if(d.flow==='risk'){
+        // risk propagates as pulsing waves, not discrete particles
+        const anim = document.createElementNS('http://www.w3.org/2000/svg','animate');
+        anim.setAttribute('attributeName','stroke-width');
+        anim.setAttribute('values','1;3;1');
+        anim.setAttribute('dur','2.4s');
+        anim.setAttribute('repeatCount','indefinite');
+        path.appendChild(anim);
+        const opAnim = document.createElementNS('http://www.w3.org/2000/svg','animate');
+        opAnim.setAttribute('attributeName','opacity');
+        opAnim.setAttribute('values','.25;.6;.25');
+        opAnim.setAttribute('dur','2.4s');
+        opAnim.setAttribute('repeatCount','indefinite');
+        path.appendChild(opAnim);
+      } else {
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.innerHTML = flowShapeMarkup(fs.shape, fs.color);
+        g.setAttribute('class','flow-particle');
+        g.style.color = fs.color;
+        const anim = document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+        anim.setAttribute('dur',((4.5/fs.speed)+Math.random()*2).toFixed(1)+'s');
+        anim.setAttribute('repeatCount','indefinite');
+        anim.setAttribute('path', dpath);
+        g.appendChild(anim);
+        svg.appendChild(g);
+      }
+    }
+  });
+
+  // floating insights — pushed further out along the same radial direction as their anchor node
+  INSIGHTS.forEach((ins,i)=>{
+    const d = DEPARTMENTS.find(x=>x.id===ins.near);
+    if(!d) return;
+    const ang = Math.atan2(d._y-CY, d._x-CX);
+    const dist = 78*GS;
+    const ix = d._x + Math.cos(ang)*dist;
+    const iy = d._y + Math.sin(ang)*dist*0.85;
+    const el = document.createElement('div');
+    el.className = 'insight ' + ins.dir;
+    el.style.left = ix+'px';
+    el.style.top = iy+'px';
+    el.style.setProperty('--gs', GS);
+    el.style.animationDelay = (i*0.4)+'s, '+(0.3+i*0.1)+'s';
+    el.style.pointerEvents = 'auto';
+    const arrow = ins.dir==='up' ? '↑' : ins.dir==='down' ? '↓' : '⚠';
+    el.innerHTML = `<span class="arrow">${arrow}</span>${ins.label}<div class="tip">${ins.detail}</div>`;
+    insightLayer.appendChild(el);
+  });
+}
+window.addEventListener('resize', layoutCampus);
+
+/* Magnetic hover micro-interaction */
+function attachMagnetic(el){
+  el.addEventListener('mousemove', e=>{
+    if(document.body.classList.contains('reduced-motion')) return;
+    const r = el.getBoundingClientRect();
+    const relX = (e.clientX - r.left - r.width/2) / (r.width/2);
+    const relY = (e.clientY - r.top - r.height/2) / (r.height/2);
+    const inner = el.querySelector('.card, .reactor-wrap');
+    if(inner) inner.style.transform = `translate(${relX*4}px, ${relY*4}px)`;
+  });
+  el.addEventListener('mouseleave', ()=>{
+    const inner = el.querySelector('.card, .reactor-wrap');
+    if(inner) inner.style.transform = '';
+  });
+}
+
+/* Particle burst on click */
+function spawnBurst(x,y,color){
+  if(document.body.classList.contains('reduced-motion')) return;
+  for(let i=0;i<10;i++){
+    const p = document.createElement('div');
+    p.className='burst';
+    p.style.left=x+'px'; p.style.top=y+'px';
+    p.style.background = color.startsWith('var')? color : color;
+    document.body.appendChild(p);
+    const ang = Math.random()*Math.PI*2, dist = 22+Math.random()*30;
+    p.animate([
+      { transform:'translate(0,0) scale(1)', opacity:1 },
+      { transform:`translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px) scale(0)`, opacity:0 }
+    ], { duration:520+Math.random()*200, easing:'cubic-bezier(.22,1,.36,1)' }).onfinish = ()=>p.remove();
+  }
+}
+
+/* =========================================================
+   DOCK + MINIMAP
+========================================================= */
+const dock = document.getElementById('dock');
+DEPARTMENTS.forEach(d=>{
+  const btn = document.createElement('button');
+  btn.className='dock-item'; btn.id='dock-'+d.id;
+  btn.innerHTML = `<span class="dot" style="background:${d.color}"></span>${d.name}`;
+  btn.onclick = ()=>flyToDept(d.id);
+  dock.appendChild(btn);
+});
+
+function updateMinimap(deptId){
+  const mm = document.getElementById('minimap');
+  if(!deptId){ mm.innerHTML = `<span class="crumb active">Campus</span>`; return; }
+  const d = DEPARTMENTS.find(x=>x.id===deptId);
+  mm.innerHTML = `<span class="crumb" onclick="flyBack()">Campus</span><span class="sep">/</span><span class="crumb active">${d.name}</span>`;
+}
+
+/* =========================================================
+   DEPT VIEW
+========================================================= */
+const deptView = document.getElementById('dept-view');
+const campusView = document.getElementById('campus-view');
+
+function barsHTML(chart){
+  const vals = chart.data.map(r=>r[1]);
+  const max = Math.max(...vals.map(v=>Math.abs(v)));
+  return `<div class="bars">${chart.data.map(([label,val,color],i)=>{
+    const h = Math.max(6, Math.abs(val)/max*150);
+    const displayVal = chart.scale ? (Math.abs(val)>=1000? (val/1000).toFixed(1)+'k' : val) : val;
+    return `<div class="bar" style="animation-delay:${i*0.05}s"><div class="val">${chart.signed && val>0 && label.startsWith('+')?'+':''}${displayVal}${!chart.scale?'%':''}</div>
+      <div class="stem" style="height:${h}px; background:linear-gradient(180deg, ${color}, color-mix(in srgb, ${color} 40%, transparent));"></div>
+      <div class="lbl">${label}</div></div>`;
+  }).join('')}</div>`;
+}
+
+function listHTML(list){
+  const max = Math.max(...list.rows.map(r=>r[1]));
+  return list.rows.map(([label,val,color])=>`
+    <div class="list-row">
+      <span class="label">${label}</span>
+      <div class="track"><div class="fill" style="width:${val/max*100}%; background:${color};"></div></div>
+      <span class="num mono">${val}${val<=100 && !Number.isInteger(val*10/10)===false && val<=100 ?'':''}${val<=105?'%':''}</span>
+    </div>`).join('');
+}
+
+function openDept(id){
+  const d = DEPARTMENTS.find(x=>x.id===id);
+  campusView.style.display='none';
+  deptView.classList.add('show');
+
+  document.querySelectorAll('.dock-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('dock-'+id).classList.add('active');
+  updateMinimap(id);
+
+  deptView.innerHTML = `
+    <div class="dept-header">
+      <button class="back-btn" onclick="flyBack()">←</button>
+      <div class="dept-title-block">
+        <div class="eyebrow" style="color:${d.color}">${d.hq? 'Overview':'Department'}</div>
+        <h2>${d.name}</h2>
+        <div class="summary">${d.summary}</div>
+      </div>
+      <div class="fresh"><div><span class="dot"></span>Verified 2h ago</div><div>FY26 · Consolidated</div></div>
+    </div>
+
+    <div class="kpi-row">
+      ${d.kpis.map(([l,v,delta],i)=>`<div class="kpi" style="animation-delay:${i*0.06}s"><div class="l">${l}</div><div class="v">${v}</div>${delta?`<div class="d ${delta.includes('+')||delta==='up'||delta==='healthy'||delta==='improving'||delta==='discount'?'up':''}" style="color:${delta.includes('watch')?'var(--amber)':''}">${delta==='up'?'↑ trending well':delta}</div>`:''}</div>`).join('')}
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3><span style="color:${d.color}">●</span> ${d.chart.title} <span class="tag">illustrative</span></h3>
+        ${barsHTML(d.chart)}
+      </div>
+      <div class="panel" style="animation-delay:.08s">
+        <h3>${d.list.title}</h3>
+        ${listHTML(d.list)}
+      </div>
+    </div>
+
+    <div class="panel datadrawer" style="animation-delay:.14s">
+      <h3>Data Table <span class="tag">export ↓</span></h3>
+      <table>
+        <thead><tr>${d.table.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <tbody>${d.table.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+  `;
+
+  populateSuggested(d);
+}
+
+function closeDept(){
+  deptView.classList.remove('show');
+  campusView.style.display='flex';
+  document.querySelectorAll('.dock-item').forEach(b=>b.classList.remove('active'));
+  updateMinimap(null);
+  populateSuggested(null);
+}
+
+/* Camera fly system — Google Earth style zoom-in / zoom-out transitions */
+function flyToDept(id){
+  const d = DEPARTMENTS.find(x=>x.id===id);
+  const inner = document.getElementById('campus-inner');
+  inner.style.transformOrigin = `${d._x}px ${d._y}px`;
+  campusView.classList.add('warp');
+  setTimeout(()=>{ openDept(id); }, document.body.classList.contains('reduced-motion') ? 0 : 460);
+}
+function flyBack(){
+  closeDept();
+  requestAnimationFrame(()=>{
+    campusView.classList.remove('warp');
+  });
+}
+
+/* =========================================================
+   JARVIS
+========================================================= */
+const jarvisBody = document.getElementById('jarvisBody');
+const suggestedBox = document.getElementById('suggested');
+const orbWrap = document.getElementById('orbWrap');
+
+function addMsg(role, html, cite){
+  const m = document.createElement('div');
+  m.className = 'msg '+role;
+  m.innerHTML = html + (cite? `<span class="cite">↳ ${cite}</span>`:'');
+  jarvisBody.appendChild(m);
+  jarvisBody.scrollTop = jarvisBody.scrollHeight;
+  if(role==='ai'){
+    orbWrap.classList.add('speaking');
+    broadcastPulse();
+    setTimeout(()=>orbWrap.classList.remove('speaking'), 1600);
+  }
+}
+
+function broadcastPulse(){
+  nodeLayer.classList.remove('campus-broadcast');
+  void nodeLayer.offsetWidth; // restart animation
+  nodeLayer.classList.add('campus-broadcast');
+  const nodes = nodeLayer.querySelectorAll('.node');
+  nodes.forEach((n,i)=>{ n.style.setProperty('--bd', (i*0.03)+'s'); n.querySelector('.card,.reactor-wrap').style.animationDelay = (i*0.03)+'s'; });
+}
+
+function showTyping(){
+  orbWrap.classList.add('thinking');
+  const t = document.createElement('div');
+  t.className='typing'; t.id='typingIndicator';
+  t.innerHTML='<span></span><span></span><span></span>';
+  jarvisBody.appendChild(t);
+  jarvisBody.scrollTop = jarvisBody.scrollHeight;
+}
+function hideTyping(){ orbWrap.classList.remove('thinking'); const t=document.getElementById('typingIndicator'); if(t) t.remove(); }
+
+const scriptedAnswers = {
+  "summarize l&t in three sentences": {text:"L&T is India's largest engineering &amp; construction conglomerate, spanning Infrastructure, Energy, Hydrocarbon, Defence, IT Services (LTIMindtree/LTTS) and Financial Services. FY26 consolidated revenue is running at ~₹2.62L Cr with a record order book of ₹5.4L Cr, up 9% YoY. Margins are improving on execution efficiency, though Middle East receivables remain a working-capital watch item.", cite:"Annual Report FY26, p.14 · Q3 FY26 concall"},
+  "why did middle east inflow rise?": {text:"Middle East order inflow rose largely on hydrocarbon and power EPC wins in the UAE and Saudi Arabia, where L&T's Hydrocarbon vertical won two large contracts this quarter. This raises geography concentration risk slightly — worth checking the Global Operations department for the FX exposure this creates.", cite:"Q3 FY26 order inflow disclosure"},
+  "has management missed guidance recently?": {text:"Yes — Q3 FY26 revenue growth came in at 13.1% against guided 14%, the first miss in five quarters after two consecutive beats. Management attributed it to monsoon-related execution delays in two infrastructure projects, not demand softness.", cite:"Guidance Tracker · Q3 FY26 concall, 09:40"},
+  "is l&t undervalued vs peers?": {text:"On P/E, L&T trades at 28.4x versus a peer average nearer 31x, and at a discount to pure-play IT/engineering names like Siemens India and ABB India — though those carry different margin and growth profiles. On EV/EBITDA (16.2x) it sits roughly in line with diversified conglomerate peers. Whether that's a genuine discount depends on how you weight the IT services (LTIMindtree) stake in a sum-of-the-parts view.", cite:"Competitor Intelligence panel · consensus estimates"},
+  "what is driving the working capital flag?": {text:"The Risk Center flag is driven mainly by Middle East receivables — 14% of the book is now aged 180+ days, up from 9% a year ago, largely tied to project milestone payment delays in two GCC contracts. Domestic receivables aging is stable.", cite:"Risk Center · Receivables Aging panel"},
+};
+
+function populateSuggested(dept){
+  suggestedBox.innerHTML = `<div class="stitle">Suggested</div>`;
+  const qs = dept ? dept.questions : ["Give me a one-line health check on L&T","What changed since yesterday?","Generate an investment thesis"];
+  qs.forEach(q=>{
+    const c = document.createElement('button');
+    c.className='chip'; c.textContent=q;
+    c.onclick = ()=>{ document.getElementById('jarvisInput').value=q; sendQuery(); };
+    suggestedBox.appendChild(c);
+  });
+}
+
+function sendQuery(){
+  const input = document.getElementById('jarvisInput');
+  const q = input.value.trim();
+  if(!q) return;
+  addMsg('user', q);
+  input.value='';
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    const key = q.toLowerCase().trim();
+    const hit = scriptedAnswers[key];
+    if(hit){ addMsg('ai', hit.text, hit.cite); }
+    else if(key.includes('thesis')){
+      addMsg('ai', "<b>Draft Thesis — L&T (Base Case)</b><br>Bull: record order book (₹5.4L Cr, +9% YoY), margin expansion in Hydrocarbon &amp; IT services, defence indigenisation tailwind.<br>Bear: Middle East receivables aging, Q3 guidance miss, capex-heavy model sensitive to rate cycle.<br>Verdict: constructive, watch working capital next 2 quarters.", "Generated from panels visited this session");
+    } else if(key.includes('changed')){
+      addMsg('ai', "Since yesterday: order inflow disclosure updated (+18% QoQ), and one analyst revised FY27 EPS estimate up by 3%. No material news flagged in Risk Center.", "News Impact Engine · last 24h");
+    } else if(key.includes('health check') || key.includes('health')){
+      addMsg('ai', "AI Health Score is 82/100 — strong on order book momentum and margin trend, moderated by Middle East working-capital exposure and one recent guidance miss.");
+    } else {
+      addMsg('ai', genericAnswers[Math.floor(Math.random()*genericAnswers.length)]);
+    }
+  }, 900 + Math.random()*500);
+}
+
+/* ---------------- INIT ---------------- */
+addMsg('ai', "Welcome back. L&T's order inflow is up <b>18% QoQ</b> — mostly Hydrocarbon EPC wins in the Middle East. Want the details, or a full health check?");
+populateSuggested(null);
+layoutCampus();
+
+/* ---------------- CONTROLS ---------------- */
+function toggleJarvis(){
+  const collapsed = document.getElementById('jarvisPanel').classList.toggle('collapsed');
+  document.getElementById('jarvisReopen').classList.toggle('show', collapsed);
+}
+function toggleMotion(){
+  const sw = document.getElementById('motionToggle');
+  sw.classList.toggle('on');
+  document.body.classList.toggle('reduced-motion');
+}
+</script>
+</body>
+</html>

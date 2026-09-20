@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eshaan Ghoshal — Equity Research Desk</title>
+<meta name="description" content="Six self-built equity research tools: sector rotation, fund positioning, IPO diligence, risk scoring, and market commentary.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d11;
+    --panel:#12151b;
+    --line:#242a34;
+    --ink:#e9edf2;
+    --muted:#8b95a3;
+    --dim:#565f6c;
+    --gold:#c99a4a;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+  }
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+
+  /* ---- masthead ---- */
+  header.masthead{border-bottom:1px solid var(--line);padding:56px 0 28px}
+  .masthead-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  .masthead-name{
+    font-family:var(--serif);
+    font-weight:500;
+    font-size:clamp(30px,4.4vw,44px);
+    letter-spacing:-0.01em;
+  }
+  .masthead-role{
+    color:var(--muted);
+    font-size:15px;
+    margin-top:6px;
+    max-width:46ch;
+  }
+  .masthead-meta{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--dim);
+    text-align:right;
+    line-height:1.7;
+    white-space:nowrap;
+  }
+  .masthead-meta a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(201,154,74,.4)}
+  .masthead-meta a:hover{border-bottom-color:var(--gold)}
+
+  /* ---- intro ---- */
+  .intro{padding:32px 0 12px;max-width:62ch}
+  .intro p{color:var(--muted);font-size:16px}
+  .intro p + p{margin-top:12px}
+
+  /* ---- board ---- */
+  .board{padding:28px 0 72px}
+  .board-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px;
+  }
+  .board-head h2{
+    font-family:var(--serif);font-weight:500;font-size:19px;font-style:italic;
+  }
+  .board-count{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  @media (max-width:680px){ .grid{grid-template-columns:1fr} }
+
+  .card{
+    background:var(--panel);
+    padding:26px 24px 24px;
+    display:flex;flex-direction:column;gap:10px;
+    text-decoration:none;
+    transition:background .15s ease;
+  }
+  .card:hover{background:#161a22}
+  .card-ticker{
+    font-family:var(--mono);font-size:11px;color:var(--gold);
+    letter-spacing:.03em;
+  }
+  .card-title{
+    font-family:var(--serif);font-size:20px;font-weight:500;line-height:1.28;
+    color:var(--ink);
+  }
+  .card-note{color:var(--muted);font-size:14px;line-height:1.55;flex-grow:1}
+  .card-open{
+    font-family:var(--mono);font-size:11.5px;color:var(--dim);
+    padding-top:8px;margin-top:4px;border-top:1px solid var(--line);
+  }
+  .card:hover .card-open{color:var(--gold)}
+
+  /* ---- footer ---- */
+  footer{border-top:1px solid var(--line);padding:26px 0 48px}
+  footer p{font-size:13px;color:var(--dim)}
+  footer a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line)}
+  footer a:hover{color:var(--gold);text-decoration-color:var(--gold)}
+</style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header class="masthead">
+      <div class="masthead-row">
+        <div>
+          <div class="masthead-name">Eshaan Ghoshal</div>
+          <p class="masthead-role">Independent equity research &amp; market-data tools — built to read like a desk analyst's own terminal, not a portfolio template.</p>
+        </div>
+        <div class="masthead-meta">
+          Equity Research, self-published<br>
+          <a href="mailto:eshaanghoshal2006@gmail.com">eshaanghoshal2006@gmail.com</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="intro">
+      <p>Six standalone builds, each answering one question an analyst actually asks — which sector is rotating in, how a fund is positioned, what an IPO is really worth, how risky a stock looks this week.</p>
+    </section>
+
+    <section class="board">
+      <div class="board-head">
+        <h2>On the desk</h2>
+        <span class="board-count">6 reports</span>
+      </div>
+
+      <div class="grid">
+        <a class="card" href="sector-of-the-week.html">
+          <span class="card-ticker">NIFTY 500 · ROTATION</span>
+          <span class="card-title">Sector of the Week</span>
+          <span class="card-note">A weekly read on which NIFTY 500 sectors are gaining or losing ground, built as a rotating dashboard rather than a static chart.</span>
+          <span class="card-open">Open report</span>
+        </a>
+
+        <a class="card" href="mirae-large-cap-terminal.html">
+          <span class="card-ticker">MIRAE · LARGE CAP</span>
+          <span class="card-title">Mirae Asset Large Cap Fund — Positioning Terminal</span>
+          <span class="card-note">A terminal-style breakdown of how the fund is currently positioned — holdings, tilts, and where it's leaning against its benchmark.</span>
+          <span class="card-open">Open report</span>
+        </a>
+
+        <a class="card" href="market-compass-newsletter.html">
+          <span class="card-ticker">WEEKLY · CHRONICLE</span>
+          <span class="card-title">The Market Compass</span>
+          <span class="card-note">A downloadable weekly wealth newsletter — markets, macro, and money, written in a chronicle format meant to be read start to finish.</span>
+          <span class="card-open">Open report</span>
+        </a>
+
+        <a class="card" href="lt-digital-twin.html">
+          <span class="card-ticker">L&amp;T · CONGLOMERATE</span>
+          <span class="card-title">L&amp;T Digital Twin — Living Company</span>
+          <span class="card-note">An interactive model of Larsen &amp; Toubro's businesses, treating a sprawling conglomerate as one living, explorable structure.</span>
+          <span class="card-open">Open report</span>
+        </a>
+
+        <a class="card" href="ipo-intelligence-sbicard.html">
+          <span class="card-ticker">SBI CARDS · IPO</span>
+          <span class="card-title">IPO Intelligence — SBI Cards &amp; Payment Services</span>
+          <span class="card-note">A diligence-style deep dive on the SBI Cards listing — the numbers, the pitch, and what they actually imply for a buyer.</span>
+          <span class="card-open">Open report</span>
+        </a>
+
+        <a class="card" href="bse-risk-score-report.html">
+          <span class="card-ticker">NSE: BSE · RISK</span>
+          <span class="card-title">BSE Ltd — Risk Score Report</span>
+          <span class="card-note">A quantitative risk scorecard for BSE Ltd, distilling volatility, governance, and fundamental signals into one score.</span>
+          <span class="card-open">Open report</span>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built and maintained by Eshaan Ghoshal. Source on <a href="https://github.com/eshaan082007/equity-research.git">GitHub</a>.</p>
+    </footer>
+  </div>
+
+</body>
+</html>
